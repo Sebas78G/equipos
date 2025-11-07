@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import MainNavigation from '../../components/iu/MainNavigation';
-import WorkflowBreadcrumbs from '../../components/iu/WorkflowBreadcrumbs';
+import MainNavigation from 'components/ui/MainNavigation';
+import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import DocumentPreview from './components/DocumentPreview';
 import DocumentConfiguration from './components/DocumentConfiguration';
 import DocumentStatusTracker from './components/DocumentStatusTracker';
-import Icon from '../../components/Applcon';
-import Button from '../../components/iu/Button';
+import Icon from 'components/AppIcon';
+import Button from 'components/ui/Button';
 
 const DocumentGeneration = () => {
   const location = useLocation();
@@ -22,19 +22,19 @@ const DocumentGeneration = () => {
     const assignmentData = location?.state?.assignmentData;
     return {
       employee: assignmentData?.employee || {
-        name: 'María González Rodríguez',
-        cedula: '1.234.567.890',
-        area: 'Departamento de Ventas',
-        email: 'maria.gonzalez@expresoviajes.com'
+        name: '',
+        cedula: '',
+        area: '',
+        email: ''
       },
       equipment: assignmentData?.equipment || {
-        type: 'Portátil',
-        serviceTag: 'DL5520-2023-001',
-        brand: 'Dell Latitude 5520',
-        status: 'Funcional'
+        type: '',
+        serviceTag: '',
+        brand: '',
+        status: ''
       },
-      deliveredBy: 'Departamento de Tecnología',
-      position: 'Administrador de TI',
+      deliveredBy: '',
+      position: '',
       includeQR: false,
       sendToSupervisor: false,
       requireDigitalSignature: false
@@ -42,22 +42,10 @@ const DocumentGeneration = () => {
   });
 
   // Checklist items state
-  const [checklistItems, setChecklistItems] = useState([
-    { id: 1, name: 'Mouse', quantity: 1, included: true },
-    { id: 2, name: 'Teclado', quantity: 1, included: true },
-    { id: 3, name: 'Monitor', quantity: 1, included: true },
-    { id: 4, name: 'Cable de Poder', quantity: 1, included: true },
-    { id: 5, name: 'Cable HDMI/VGA', quantity: 1, included: true },
-    { id: 6, name: 'Base/Soporte', quantity: 1, included: false },
-    { id: 7, name: 'Audífonos', quantity: 1, included: false }
-  ]);
+  const [checklistItems, setChecklistItems] = useState([]);
 
   // Special instructions state
-  const [specialInstructions, setSpecialInstructions] = useState(`El equipo debe ser utilizado únicamente para actividades laborales relacionadas con EXPRESO VIAJES Y TURISMO.
-
-Es responsabilidad del empleado mantener el equipo en buen estado y reportar cualquier daño o mal funcionamiento inmediatamente al Departamento de Tecnología.
-
-El equipo debe ser devuelto en caso de terminación del contrato laboral o cambio de posición que no requiera el uso del mismo.`);
+  const [specialInstructions, setSpecialInstructions] = useState('');
 
   // Filter included checklist items for preview
   const includedItems = checklistItems?.filter(item => item?.included);
@@ -100,7 +88,7 @@ El equipo debe ser devuelto en caso de terminación del contrato laboral o cambi
 
   useEffect(() => {
     // Set page title
-    document.title = 'Generar Documentos - EquipManager';
+    document.title = 'Generar Documentos - Equipos EVT';
   }, []);
 
   return (

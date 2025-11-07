@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import MainNavigation from '../../components/iu/MainNavigation';
-import WorkflowBreadcrumbs from '../../components/iu/WorkflowBreadcrumbs';
+import MainNavigation from 'components/ui/MainNavigation';
+import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import EquipmentSelectionPanel from './components/EquipmentSelectionPanel';
 import EmployeeInformationForm from './components/EmployeeInformationForm';
 import AccessoryChecklist from './components/AccessoryChecklist';
 import AssignmentPreview from './components/AssignmentPreview';
-import Icon from '../../components/Applcon';
-import Button from '../../components/iu/Button';
+import Icon from 'components/AppIcon';
+import Button from 'components/ui/Button';
 
 const EquipmentAssignment = () => {
   const navigate = useNavigate();

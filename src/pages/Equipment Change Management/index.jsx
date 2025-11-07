@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import MainNavigation from '../../components/iu/MainNavigation';
-import WorkflowBreadcrumbs from '../../components/iu/WorkflowBreadcrumbs';
+import MainNavigation from 'components/ui/MainNavigation';
+import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import ChangeManagementTabs from './components/ChangeManagementTabs';
 import EquipmentSearchBar from './components/EquipmentSearchBar';
 import EquipmentList from './components/EquipmentList';
 import DamageReportModal from './components/DamageReportModal';
 import ResignationProcessModal from './components/ResignationProcessModal';
-import Icon from '../../components/Applcon';
+import Icon from 'components/AppIcon';
 
 const EquipmentChangeManagement = () => {
   const [activeTab, setActiveTab] = useState('damage');
@@ -17,109 +17,7 @@ const EquipmentChangeManagement = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   // Mock data for assigned equipment
-  const assignedEquipments = [
-  {
-    id: 1,
-    serviceTag: "ST001234",
-    brand: "Dell",
-    model: "Latitude 5520",
-    type: "Portátil",
-    status: "Asignado",
-    assignmentDate: "15/10/2024",
-    image: "https://images.unsplash.com/photo-1599685171149-d2a83dc4a32f",
-    imageAlt: "Dell Latitude laptop open on wooden desk showing professional workspace setup",
-    assignedEmployee: {
-      name: "María González Rodríguez",
-      email: "maria.gonzalez@expresoviajes.com",
-      cedula: "12345678",
-      area: "Contabilidad"
-    }
-  },
-  {
-    id: 2,
-    serviceTag: "ST001235",
-    brand: "HP",
-    model: "EliteDesk 800",
-    type: "PC",
-    status: "Asignado",
-    assignmentDate: "12/10/2024",
-    image: "https://images.unsplash.com/photo-1670818936538-d7ce01235442",
-    imageAlt: "HP desktop computer tower in modern office environment with monitor and keyboard",
-    assignedEmployee: {
-      name: "Carlos Mendoza López",
-      email: "carlos.mendoza@expresoviajes.com",
-      cedula: "87654321",
-      area: "Ventas"
-    }
-  },
-  {
-    id: 3,
-    serviceTag: "ST001236",
-    brand: "Lenovo",
-    model: "ThinkPad X1",
-    type: "Portátil",
-    status: "Asignado",
-    assignmentDate: "08/10/2024",
-    image: "https://images.unsplash.com/photo-1649573650925-d88c805444ea",
-    imageAlt: "Lenovo ThinkPad laptop with black finish on conference table in meeting room",
-    assignedEmployee: {
-      name: "Ana Patricia Herrera",
-      email: "ana.herrera@expresoviajes.com",
-      cedula: "11223344",
-      area: "Recursos Humanos"
-    }
-  },
-  {
-    id: 4,
-    serviceTag: "ST001237",
-    brand: "Samsung",
-    model: "Galaxy Tab S8",
-    type: "Tablet",
-    status: "Asignado",
-    assignmentDate: "05/10/2024",
-    image: "https://images.unsplash.com/photo-1590103515336-6e211e1ace1f",
-    imageAlt: "Samsung Galaxy tablet displaying business presentation on conference room table",
-    assignedEmployee: {
-      name: "Roberto Silva Martínez",
-      email: "roberto.silva@expresoviajes.com",
-      cedula: "55667788",
-      area: "Marketing"
-    }
-  },
-  {
-    id: 5,
-    serviceTag: "ST001238",
-    brand: "Apple",
-    model: "MacBook Pro 14",
-    type: "Portátil",
-    status: "Asignado",
-    assignmentDate: "02/10/2024",
-    image: "https://images.unsplash.com/photo-1591548745205-001fd9ef73f2",
-    imageAlt: "Apple MacBook Pro with silver finish open on modern desk with coffee cup nearby",
-    assignedEmployee: {
-      name: "Laura Fernández Castro",
-      email: "laura.fernandez@expresoviajes.com",
-      cedula: "99887766",
-      area: "Diseño Gráfico"
-    }
-  },
-  {
-    id: 6,
-    serviceTag: "ST001239",
-    brand: "Asus",
-    model: "VivoBook 15",
-    type: "Portátil",
-    status: "Asignado",
-    assignmentDate: "28/09/2024",
-    image: "https://images.unsplash.com/photo-1666926785795-936c30b52bb0",
-    imageAlt: "Asus VivoBook laptop with dark gray finish on office desk with documents and pen",
-    assignedEmployee: {
-      name: "Diego Ramírez Vega",
-      email: "diego.ramirez@expresoviajes.com",
-      cedula: "33445566",
-      area: "Operaciones"
-    }
-  }];
+  const assignedEquipments = [];
 
 
   const handleTabChange = (tabId) => {
@@ -184,7 +82,7 @@ const EquipmentChangeManagement = () => {
                   <Icon name="AlertTriangle" size={16} className="text-error" />
                   <span className="text-sm font-medium text-foreground">Reportes de Daños</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">12</p>
+                <p className="text-2xl font-bold text-foreground">0</p>
                 <p className="text-xs text-muted-foreground">Equipos con problemas</p>
               </div>
               
@@ -193,7 +91,7 @@ const EquipmentChangeManagement = () => {
                   <Icon name="UserMinus" size={16} className="text-warning" />
                   <span className="text-sm font-medium text-foreground">Renuncias</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">8</p>
+                <p className="text-2xl font-bold text-foreground">0</p>
                 <p className="text-xs text-muted-foreground">Equipos por procesar</p>
               </div>
               

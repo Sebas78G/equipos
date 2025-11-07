@@ -8,84 +8,10 @@ const EquipmentSelectionPanel = ({ selectedEquipment, onEquipmentSelect }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedType, setSelectedType] = useState("todos");
 
-  const equipmentTypes = [
-  { value: "todos", label: "Todos los Equipos" },
-  { value: "pc", label: "PC Escritorio" },
-  { value: "portatil", label: "Portátil" },
-  { value: "tablet", label: "Tablet" }];
+  const equipmentTypes = [];
 
 
-  const availableEquipment = [
-  {
-    id: "EQ001",
-    serviceTag: "DELL-PC-001",
-    type: "pc",
-    brand: "Dell",
-    model: "OptiPlex 7090",
-    processor: "Intel Core i7-11700",
-    ram: "16GB DDR4",
-    storage: "512GB SSD",
-    status: "disponible",
-    location: "Almacén TI - Estante A3",
-    image: "https://images.unsplash.com/photo-1500559972068-a79b130f4b88",
-    imageAlt: "Desktop computer tower with monitor and keyboard on office desk"
-  },
-  {
-    id: "EQ002",
-    serviceTag: "HP-LAP-002",
-    type: "portatil",
-    brand: "HP",
-    model: "EliteBook 840 G8",
-    processor: "Intel Core i5-1135G7",
-    ram: "8GB DDR4",
-    storage: "256GB SSD",
-    status: "disponible",
-    location: "Almacén TI - Estante B1",
-    image: "https://images.unsplash.com/photo-1703098215229-bd2addd90b1c",
-    imageAlt: "Silver laptop computer open on wooden desk showing desktop screen"
-  },
-  {
-    id: "EQ003",
-    serviceTag: "LENOVO-PC-003",
-    type: "pc",
-    brand: "Lenovo",
-    model: "ThinkCentre M720q",
-    processor: "Intel Core i5-9400T",
-    ram: "8GB DDR4",
-    storage: "256GB SSD",
-    status: "disponible",
-    location: "Almacén TI - Estante A2",
-    image: "https://images.unsplash.com/photo-1689236673605-e5d95a9c450c",
-    imageAlt: "Compact desktop computer tower in black color on office surface"
-  },
-  {
-    id: "EQ004",
-    serviceTag: "SAMSUNG-TAB-004",
-    type: "tablet",
-    brand: "Samsung",
-    model: "Galaxy Tab S7",
-    processor: "Snapdragon 865+",
-    ram: "6GB",
-    storage: "128GB",
-    status: "disponible",
-    location: "Almacén TI - Estante C1",
-    image: "https://images.unsplash.com/photo-1589070265406-1f9e9b5a141f",
-    imageAlt: "Black tablet device displaying colorful interface on white background"
-  },
-  {
-    id: "EQ005",
-    serviceTag: "ASUS-LAP-005",
-    type: "portatil",
-    brand: "ASUS",
-    model: "VivoBook 15",
-    processor: "AMD Ryzen 5 5500U",
-    ram: "8GB DDR4",
-    storage: "512GB SSD",
-    status: "disponible",
-    location: "Almacén TI - Estante B2",
-    image: "https://images.unsplash.com/photo-1639283758775-e7f0616aa156",
-    imageAlt: "Modern laptop computer with silver finish open displaying desktop interface"
-  }];
+  const availableEquipment = [];
 
 
   const filteredEquipment = availableEquipment?.filter((equipment) => {

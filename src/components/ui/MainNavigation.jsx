@@ -64,7 +64,7 @@ const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
               <Icon name="Package" size={20} color="white" />
             </div>
             <div className="hidden sm:block">
-              <h1 className="text-lg font-semibold text-foreground">EquipManager</h1>
+              <h1 className="text-lg font-semibold text-foreground">Equipos EVT</h1>
               <p className="text-xs text-muted-foreground">EXPRESO VIAJES Y TURISMO</p>
             </div>
           </div>

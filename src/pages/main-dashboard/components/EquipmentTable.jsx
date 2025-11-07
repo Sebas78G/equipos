@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import Icon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
+import Icon from 'components/AppIcon';
+import Button from 'components/ui/Button';
+import Input from 'components/ui/Input';
 
 const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
   const [searchTerm, setSearchTerm] = useState("");

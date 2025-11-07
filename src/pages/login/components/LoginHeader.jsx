@@ -1,5 +1,5 @@
 import React from 'react';
-import Icon from '../../../components/AppIcon';
+import Icon from 'components/AppIcon';
 
 const LoginHeader = () => {
   return (
@@ -13,7 +13,7 @@ const LoginHeader = () => {
 
       {/* Company Name */}
       <h1 className="text-2xl font-bold text-foreground mb-2">
-        EquipManager
+      Equipos EVT
       </h1>
       
       {/* Company Subtitle */}

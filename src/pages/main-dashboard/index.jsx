@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import MainNavigation from '../../components/iu/MainNavigation';
-import DashboardTabs from '../../components/iu/DashboardTabs';
-import WorkflowBreadcrumbs from '../../components/iu/WorkflowBreadcrumbs';
+import MainNavigation from 'components/ui/MainNavigation';
+import DashboardTabs from 'components/ui/DashboardTabs';
+import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import MetricsCard from './components/MetricsCard';
 import EquipmentTable from './components/EquipmentTable';
 import QuickActions from './components/QuickActions';
@@ -15,151 +15,13 @@ const MainDashboard = () => {
   const navigate = useNavigate();
 
   // Mock data for equipment metrics
-  const equipmentMetrics = [
-    {
-      title: 'Total PC',
-      count: 45,
-      icon: 'Monitor',
-      color: 'primary',
-      trend: { type: 'up', value: '+3' },
-      description: 'Computadoras de escritorio'
-    },
-    {
-      title: 'Total Portátiles',
-      count: 67,
-      icon: 'Laptop',
-      color: 'accent',
-      trend: { type: 'up', value: '+5' },
-      description: 'Computadoras portátiles'
-    },
-    {
-      title: 'Total Tablets',
-      count: 23,
-      icon: 'Tablet',
-      color: 'success',
-      trend: { type: 'neutral', value: '0' },
-      description: 'Dispositivos tablet'
-    },
-    {
-      title: 'Equipos Dañados',
-      count: 12,
-      icon: 'AlertTriangle',
-      color: 'error',
-      trend: { type: 'down', value: '-2' },
-      description: 'Requieren reparación'
-    }
-  ];
+  const equipmentMetrics = [];
 
   // Mock data for status overview
-  const statusData = [
-    {
-      status: 'Asignados',
-      count: 89,
-      description: 'Equipos asignados a empleados'
-    },
-    {
-      status: 'Disponible',
-      count: 45,
-      description: 'Equipos disponibles para asignación'
-    },
-    {
-      status: 'Dañados',
-      count: 12,
-      description: 'Equipos que requieren reparación'
-    }
-  ];
+  const statusData = [];
 
   // Mock data for recent equipment activity
-  const equipmentData = [
-    {
-      id: 1,
-      type: 'PC',
-      brand: 'Dell',
-      model: 'OptiPlex 7090',
-      serviceTag: 'DL7090001',
-      employeeName: 'Carlos Rodríguez',
-      area: 'Sistemas',
-      status: 'Asignado',
-      lastUpdated: new Date('2025-11-05T14:30:00')
-    },
-    {
-      id: 2,
-      type: 'Portátil',
-      brand: 'HP',
-      model: 'EliteBook 840',
-      serviceTag: 'HP840002',
-      employeeName: 'María González',
-      area: 'Contabilidad',
-      status: 'Asignado',
-      lastUpdated: new Date('2025-11-05T13:15:00')
-    },
-    {
-      id: 3,
-      type: 'Tablet',
-      brand: 'Samsung',
-      model: 'Galaxy Tab S8',
-      serviceTag: 'SM-T870003',
-      employeeName: 'Ana Martínez',
-      area: 'Ventas',
-      status: 'Asignado',
-      lastUpdated: new Date('2025-11-05T12:45:00')
-    },
-    {
-      id: 4,
-      type: 'PC',
-      brand: 'Lenovo',
-      model: 'ThinkCentre M720',
-      serviceTag: 'LN720004',
-      employeeName: 'Sin asignar',
-      area: 'Almacén',
-      status: 'Disponible',
-      lastUpdated: new Date('2025-11-05T11:20:00')
-    },
-    {
-      id: 5,
-      type: 'Portátil',
-      brand: 'Dell',
-      model: 'Latitude 5520',
-      serviceTag: 'DL5520005',
-      employeeName: 'Pedro Sánchez',
-      area: 'Recursos Humanos',
-      status: 'Dañado',
-      lastUpdated: new Date('2025-11-05T10:30:00')
-    },
-    {
-      id: 6,
-      type: 'PC',
-      brand: 'HP',
-      model: 'ProDesk 600',
-      serviceTag: 'HP600006',
-      employeeName: 'Laura Jiménez',
-      area: 'Marketing',
-      status: 'Asignado',
-      lastUpdated: new Date('2025-11-05T09:15:00')
-    },
-    {
-      id: 7,
-      type: 'Tablet',
-      brand: 'iPad',
-      model: 'Air 5th Gen',
-      serviceTag: 'IPD-A5007',
-      employeeName: 'Sin asignar',
-      area: 'Almacén',
-      status: 'Disponible',
-      lastUpdated: new Date('2025-11-05T08:45:00')
-    },
-    {
-      id: 8,
-      type: 'Portátil',
-      brand: 'Asus',
-      model: 'VivoBook Pro',
-      serviceTag: 'AS-VP008',
-      employeeName: 'Roberto Torres',
-      area: 'Desarrollo',
-      status: 'Asignado',
-      lastUpdated: new Date('2025-11-04T16:30:00')
-    }
-  ];
+  const equipmentData = [];
 
   const handleToggleCollapse = () => {
     setIsCollapsed(prev => !prev);
@@ -293,7 +155,7 @@ const MainDashboard = () => {
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-foreground">Sistema:</p>
-                <p className="text-muted-foreground">EquipManager v1.0</p>
+                <p className="text-muted-foreground">Equipos EVT v1.0</p>
               </div>
               <div className="space-y-1">
                 <p className="font-medium text-foreground">Estado:</p>

@@ -196,7 +196,7 @@ const DocumentPreview = ({
               Este documento certifica la entrega de los equipos mencionados en perfecto estado de funcionamiento.
             </p>
             <p className="text-xs text-muted-foreground mt-2">
-              EXPRESO VIAJES Y TURISMO - Sistema EquipManager - Generado el {currentDate}
+              EXPRESO VIAJES Y TURISMO - Sistema Equipos EVT - Generado el {currentDate}
             </p>
           </div>
         </div>

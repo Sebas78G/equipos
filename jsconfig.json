@@ -1,5 +1,12 @@
 {
   "compilerOptions": {
-    "baseUrl": "./src"
-  }
+    "baseUrl": "src",
+    "jsx": "react-jsx",
+    "typeRoots": [
+      "node_modules/@types"
+    ]
+  },
+  "include": [
+    "src"
+  ]
 }
