@@ -1,0 +1,42 @@
+Tablas de la base de datos:
+
+1. Tabla de Usuarios (Users):
+   - user_id (clave primaria)
+      - nombre_usuario
+         - hash_contraseña
+            - rol (ej. administrador, empleado)
+
+            2. Tabla de Equipos (Equipment):
+               - equipo_id (clave primaria)
+                  - nombre_equipo
+                     - descripcion
+                        - numero_serie
+                           - estado (ej. disponible, asignado, en reparación)
+
+                           3. Tabla de Empleados (Employees):
+                              - empleado_id (clave primaria)
+                                 - nombre_empleado
+                                    - cargo
+                                       - departamento
+
+                                       4. Tabla de Asignaciones (Assignments):
+                                          - asignacion_id (clave primaria)
+                                             - equipo_id (clave foránea a Equipment)
+                                                - empleado_id (clave foránea a Employees)
+                                                   - fecha_asignacion
+                                                      - fecha_devolucion (puede ser nulo)
+
+                                                      5. Tabla de Historial (History):
+                                                         - historial_id (clave primaria)
+                                                            - equipo_id (clave foránea a Equipment)
+                                                               - tipo_evento (ej. asignación, devolución, mantenimiento)
+                                                                  - fecha_evento
+                                                                     - detalles_evento
+
+                                                                     6. Tabla de Documentos (Documents):
+                                                                        - documento_id (clave primaria)
+                                                                           - tipo_documento (ej. acta de entrega, reporte de daños)
+                                                                              - fecha_generacion
+                                                                                 - contenido_documento
+                                                                                    - asignacion_id (clave foránea a Assignments, opcional)
+                                                                                    
