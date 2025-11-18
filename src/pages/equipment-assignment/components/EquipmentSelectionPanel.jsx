@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
 import Input from 'components/ui/Input';
 import Select from 'components/ui/Select';
-import Spinner from 'components/ui/Spinner';
+import resolveEquipmentImage from '../../../utils/imageResolver'; // Import the resolver
 
 const EquipmentSelectionPanel = ({ availableEquipment, selectedEquipment, onEquipmentSelect, error }) => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,21 +31,19 @@ const EquipmentSelectionPanel = ({ availableEquipment, selectedEquipment, onEqui
   });
 
   const getTypeIcon = (type) => {
-    switch (type) {
-      case 'PC': return 'Monitor';
-      case 'Portatil': return 'Laptop';
-      case 'Tablet': return 'Tablet';
-      default: return 'Package';
-    }
+    const lowerType = type?.toLowerCase() || '';
+    if (lowerType.includes('pc') || lowerType.includes('escritorio')) return 'Monitor';
+    if (lowerType.includes('portatil')) return 'Laptop';
+    if (lowerType.includes('tablet')) return 'Tablet';
+    return 'Package';
   };
 
   const getTypeLabel = (type) => {
-    switch (type) {
-      case 'PC': return 'PC Escritorio';
-      case 'Portatil': return 'Portátil';
-      case 'Tablet': return 'Tablet';
-      default: return 'Equipo';
-    }
+    const lowerType = type?.toLowerCase() || '';
+    if (lowerType.includes('pc') || lowerType.includes('escritorio')) return 'PC Escritorio';
+    if (lowerType.includes('portatil')) return 'Portátil';
+    if (lowerType.includes('tablet')) return 'Tablet';
+    return 'Equipo';
   };
 
   return (
@@ -89,42 +87,54 @@ const EquipmentSelectionPanel = ({ availableEquipment, selectedEquipment, onEqui
               <p className="text-muted-foreground">No se encontraron equipos disponibles</p>
             </div>
           ) : (
-            filteredEquipment.map((equipment) => (
-              <div
-                key={equipment.id}
-                className={`p-4 border rounded-lg cursor-pointer transition-smooth ${
-                  selectedEquipment?.id === equipment.id
-                    ? 'border-primary bg-primary/5'
-                    : 'border-border hover:border-primary/50 hover:bg-muted/30'
-                }`}
-                onClick={() => handleEquipmentSelect(equipment)}
-              >
-                <div className="flex items-start space-x-4">
-                  <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
-                    <Icon name={getTypeIcon(equipment.tipo)} size={32} className="text-muted-foreground" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center space-x-2">
-                        <Icon name={getTypeIcon(equipment.tipo)} size={16} className="text-primary" />
-                        <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
-                          {getTypeLabel(equipment.tipo)}
-                        </span>
-                      </div>
-                      {selectedEquipment?.id === equipment.id && (
-                        <Icon name="CheckCircle" size={16} className="text-success" />
+            filteredEquipment.map((equipment) => {
+              const imageUrl = resolveEquipmentImage(equipment.referencia_cpu);
+              return (
+                <div
+                  key={equipment.id}
+                  className={`p-4 border rounded-lg cursor-pointer transition-smooth ${
+                    selectedEquipment?.id === equipment.id
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border hover:border-primary/50 hover:bg-muted/30'
+                  }`}
+                  onClick={() => handleEquipmentSelect(equipment)}
+                >
+                  <div className="flex items-start space-x-4">
+                    <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center">
+                      {/* Image rendering logic */}
+                      {imageUrl ? (
+                        <img 
+                          src={imageUrl} 
+                          alt={`Imagen de ${equipment.referencia_cpu}`}
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <Icon name={getTypeIcon(equipment.tipo)} size={32} className="text-muted-foreground" />
                       )}
                     </div>
-                    <h3 className="font-medium text-foreground mb-1 truncate">
-                      {equipment.marca_cpu} {equipment.referencia_cpu}
-                    </h3>
-                    <p className="text-sm text-muted-foreground mb-2">
-                      Service Tag: <span className="font-mono font-medium">{equipment.service_tag_cpu}</span>
-                    </p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2">
+                          <Icon name={getTypeIcon(equipment.tipo)} size={16} className="text-primary" />
+                          <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">
+                            {getTypeLabel(equipment.tipo)}
+                          </span>
+                        </div>
+                        {selectedEquipment?.id === equipment.id && (
+                          <Icon name="CheckCircle" size={16} className="text-success" />
+                        )}
+                      </div>
+                      <h3 className="font-medium text-foreground mb-1 truncate">
+                        {equipment.marca_cpu} {equipment.referencia_cpu}
+                      </h3>
+                      <p className="text-sm text-muted-foreground mb-2">
+                        Service Tag: <span className="font-mono font-medium">{equipment.service_tag_cpu}</span>
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))
+              )
+            })
           )}
         </div>
         {selectedEquipment && (

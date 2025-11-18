@@ -9,8 +9,10 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
   const [sortConfig, setSortConfig] = useState({ key: 'lastUpdated', direction: 'desc' });
   const navigate = useNavigate();
 
+  // This is the corrected function that now uses the unique service_tag.
   const handleViewDetails = (item) => {
-    navigate(`/equipment-history?id=${item.id}`);
+    // All navigation to the history page should be based on the unique service tag (CPU).
+    navigate(`/equipment-history?service_tag=${item.serviceTag}`);
   };
 
   const getStatusBadge = (status) => {

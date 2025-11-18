@@ -7,8 +7,8 @@ import HistoryFilters from './components/HistoryFilters';
 import HistoryTimeline from './components/HistoryTimeline';
 import Icon from 'components/AppIcon';
 import Button from 'components/ui/Button';
-import { getHistoryByEquipmentId } from '../../services/historyService';
-import { getEquipmentById } from '../../services/equipmentService';
+import { getHistoryByServiceTag } from '../../services/historyService';
+import { getEquipmentByServiceTag } from '../../services/equipmentService';
 
 const EquipmentHistory = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
@@ -19,31 +19,39 @@ const EquipmentHistory = () => {
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
-    const equipmentId = searchParams.get('id');
+    // The component now relies on 'service_tag' which is unique across all tables.
+    const serviceTag = searchParams.get('service_tag');
 
-    if (equipmentId) {
-      const cleanId = equipmentId.includes('-') ? equipmentId.split('-').pop() : equipmentId; // Remove prefix from ID
+    if (serviceTag) {
       setIsLoading(true);
       setError(null);
+      
+      // Fetch equipment details and history concurrently since both depend on the service tag.
       Promise.all([
-        getEquipmentById(cleanId),
-        getHistoryByEquipmentId(cleanId)
+        getEquipmentByServiceTag(serviceTag),
+        getHistoryByServiceTag(serviceTag)
       ]).then(([equipment, historyResponse]) => {
+        
         if (equipment) {
-          const history = historyResponse?.history || historyResponse || [];
           setSelectedEquipment(equipment);
-          setHistoryEntries(history);
         } else {
-          setError('No se pudo encontrar el equipo especificado.');
+          // If the equipment itself isn't found, it's a critical error.
+          throw new Error('No se pudo encontrar el equipo con el service tag especificado.');
         }
-        setIsLoading(false);
+
+        const history = historyResponse?.history || [];
+        setHistoryEntries(history);
+
       }).catch(error => {
-        console.error("Error fetching equipment data:", error);
-        setError('Ocurrió un error al cargar los datos del equipo.');
+        console.error("Error fetching equipment data or history:", error);
+        setError(error.message || 'Ocurrió un error al cargar los datos del equipo.');
+      }).finally(() => {
         setIsLoading(false);
       });
+
     } else {
-      setError('No se ha especificado un ID de equipo.');
+      // If no service tag is provided in the URL, there's nothing to show.
+      setError('No se ha especificado un service tag de equipo en la URL.');
       setIsLoading(false);
     }
   }, [location.search]);
@@ -72,7 +80,7 @@ const EquipmentHistory = () => {
           </div>
           <h3 className="text-lg font-semibold text-foreground mb-2">{error}</h3>
           <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Por favor, verifique el ID del equipo o intente de nuevo más tarde.
+            Por favor, verifique que la URL contenga el parámetro 'service_tag' correcto.
           </p>
         </div>
       );

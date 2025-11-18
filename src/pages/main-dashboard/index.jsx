@@ -8,13 +8,13 @@ import StatusOverview from './components/StatusOverview';
 import { useNavigate } from 'react-router-dom';
 import { getDashboardData } from 'services/dashboardService';
 import Spinner from '../../components/ui/Spinner';
-import ErrorDisplay from '../../components/ui/ErrorDisplay'; // Import the new component
+import ErrorDisplay from '../../components/ui/ErrorDisplay';
 
 const MainDashboard = () => {
   const [activeTab, setActiveTab] = useState('todos');
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null); // Add state for errors
+  const [error, setError] = useState(null);
 
   const [equipmentData, setEquipmentData] = useState([]);
   const [dashboardCounts, setDashboardCounts] = useState({});
@@ -38,15 +38,17 @@ const MainDashboard = () => {
   };
 
   const handleEquipmentAction = (action, equipment = null) => {
+    if (!equipment || !equipment.serviceTag) return; 
+
     switch (action) {
       case 'refresh':
         setRefreshKey(prev => prev + 1);
         break;
       case 'view':
-        navigate(`/equipment-history?id=${equipment.id}`);
+        navigate(`/equipment-history?service_tag=${equipment.serviceTag}`);
         break;
       case 'edit':
-        navigate(`/edit-equipment?id=${equipment.id}`);
+        navigate(`/edit-equipment?service_tag=${equipment.serviceTag}`);
         break;
       default:
         break;
@@ -55,14 +57,14 @@ const MainDashboard = () => {
 
   const fetchData = useCallback(async () => {
     setLoading(true);
-    setError(null); // Reset error state on new fetch
+    setError(null);
     try {
       const { recentActivity, dashboardCounts: counts } = await getDashboardData();
       setEquipmentData(recentActivity);
       setDashboardCounts(counts);
     } catch (error) {
       console.error("Failed to fetch dashboard data:", error);
-      setError('No se pudieron cargar los datos del panel. Verifique la conexión con el servidor.'); // Set a user-friendly error
+      setError('No se pudieron cargar los datos del panel. Verifique la conexión con el servidor.');
     } finally {
       setLoading(false);
     }
@@ -76,11 +78,11 @@ const MainDashboard = () => {
     if (!equipmentData) return [];
     switch (activeTab) {
       case 'pc':
-        return equipmentData.filter(item => item.type === 'PC');
+        return equipmentData.filter(item => item.tipo && item.tipo.toLowerCase() === 'pc');
       case 'portatil':
-        return equipmentData.filter(item => item.type === 'Portatil');
+        return equipmentData.filter(item => item.tipo && item.tipo.toLowerCase() === 'portatil');
       case 'tablet':
-        return equipmentData.filter(item => item.type === 'Tablet');
+        return equipmentData.filter(item => item.tipo && item.tipo.toLowerCase() === 'tablet');
       case 'asignados':
         return equipmentData.filter(item => item.status === 'Asignado');
       case 'disponible':

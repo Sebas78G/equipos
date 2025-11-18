@@ -168,63 +168,88 @@ app.post('/api/asignaciones', async (req, res) => {
     }
 });
 
-// GET equipment by ID
-app.get('/api/equipment/:id', async (req, res) => {
-    const { id } = req.params;
+// GET equipment by service tag
+app.get('/api/equipment/by-tag/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+
+    if (!serviceTag) {
+        return res.status(400).json({ msg: 'Service tag is required' });
+    }
+
     try {
-        const pcResult = await pool.query('SELECT * FROM asignaciones_pc WHERE id = $1', [id]);
-        if (pcResult.rows.length > 0) {
-            return res.json(pcResult.rows[0]);
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles'];
+        let equipment = null;
+
+        for (const table of tables) {
+            const result = await pool.query(`SELECT * FROM ${table} WHERE service_tag_cpu = $1`, [serviceTag]);
+            if (result.rows.length > 0) {
+                equipment = result.rows[0];
+                // Add a 'source_table' property to know where it came from, useful for frontend logic.
+                equipment.source_table = table;
+                break; 
+            }
         }
 
-        const portatilResult = await pool.query('SELECT * FROM asignaciones_portatiles WHERE id = $1', [id]);
-        if (portatilResult.rows.length > 0) {
-            return res.json(portatilResult.rows[0]);
+        if (equipment) {
+            res.json(equipment);
+        } else {
+            res.status(404).json({ msg: `Equipment with service tag ${serviceTag} not found in any table` });
         }
+    } catch (err) {
+        console.error("Error fetching equipment by service tag:", err.message);
+        res.status(500).send('Server error');
+    }
+});
 
-        const tabletResult = await pool.query('SELECT * FROM asignaciones_tablets WHERE id = $1', [id]);
-        if (tabletResult.rows.length > 0) {
-            return res.json(tabletResult.rows[0]);
+// GET equipment by type and ID (DEPRECATED - use /by-tag/:serviceTag instead)
+app.get('/api/equipment/:type/:id', async (req, res) => {
+    const { type, id } = req.params;
+
+    let tableName;
+    const lowerCaseType = type.toLowerCase();
+
+    if (lowerCaseType === 'pc' || lowerCaseType === 'escritorio') {
+        tableName = 'asignaciones_pc';
+    } else if (lowerCaseType === 'portatil') {
+        tableName = 'asignaciones_portatiles';
+    } else if (lowerCaseType === 'tablet') {
+        tableName = 'asignaciones_tablets';
+    } else if (lowerCaseType === 'disponible') {
+        tableName = 'disponibles';
+    } else {
+        return res.status(400).json({ msg: 'Invalid equipment type specified' });
+    }
+
+    try {
+        const result = await pool.query(`SELECT * FROM ${tableName} WHERE id = $1`, [id]);
+        if (result.rows.length > 0) {
+            res.json(result.rows[0]);
+        } else {
+            res.status(404).json({ msg: `Equipment not found in table ${tableName}` });
         }
-
-        const disponibleResult = await pool.query('SELECT * FROM disponibles WHERE id = $1', [id]);
-        if (disponibleResult.rows.length > 0) {
-            return res.json(disponibleResult.rows[0]);
-        }
-
-        res.status(404).json({ msg: 'Equipment not found' });
     } catch (err) {
         console.error(err.message);
         res.status(500).send('Server error');
     }
 });
 
-app.get('/api/history/:id', async (req, res) => {
-  const { id } = req.params;
+// GET history by service tag
+app.get('/api/history/by-tag/:serviceTag', async (req, res) => {
+  const { serviceTag } = req.params;
+
+  if (!serviceTag) {
+    return res.status(400).json({ msg: "Service tag is required" });
+  }
 
   try {
-    // 1. Obtener el service tag a partir del ID
-    const tagResult = await pool.query(`
-      SELECT service_tag_cpu FROM asignaciones_pc WHERE id = $1
-      UNION SELECT service_tag_cpu FROM asignaciones_portatiles WHERE id = $1
-      UNION SELECT service_tag_cpu FROM asignaciones_tablets WHERE id = $1
-      UNION SELECT service_tag_cpu FROM disponibles WHERE id = $1
-    `, [id]);
-
-    if (tagResult.rows.length === 0) {
-      return res.status(404).json({ msg: "Equipo no encontrado" });
-    }
-
-    const tag = tagResult.rows[0].service_tag_cpu;
-
-    // 2. Consultar historial en todas las tablas usando service_tag_cpu
     const results = [];
 
-    const addEvents = (rows, type) => {
+    const addEvents = (rows, type, idField = 'id') => {
       rows.forEach(r => {
+        const prefix = r.status === 'Disponible' ? 'disponible' : r.tipo.toLowerCase();
         results.push({
-          id: r.id,
-          eventType: type,    // assignment, available, damage, resign, etc.
+          id: `${prefix}-${r[idField]}`,
+          eventType: type,
           title: getEventTitle(type, r),
           description: getEventDescription(type, r),
           date: extractDate(r),
@@ -233,41 +258,43 @@ app.get('/api/history/:id', async (req, res) => {
           employee: r.nombre_funcionario ? {
             name: r.nombre_funcionario,
             department: r.area,
-            cedula: r.activo_cpu,
+            cedula: r.activo_cpu, 
             email: r.correo
           } : null
         });
       });
     };
 
-    const asignaciones_pc = await pool.query(`SELECT * FROM asignaciones_pc WHERE service_tag_cpu = $1`, [tag]);
-    addEvents(asignaciones_pc.rows, "assignment");
+    // Use Promise.all for concurrent queries
+    const queries = [
+      pool.query(`SELECT *, 'asignaciones_pc' as source_table FROM asignaciones_pc WHERE service_tag_cpu = $1`, [serviceTag]),
+      pool.query(`SELECT *, 'asignaciones_portatiles' as source_table FROM asignaciones_portatiles WHERE service_tag_cpu = $1`, [serviceTag]),
+      pool.query(`SELECT *, 'asignaciones_tablets' as source_table FROM asignaciones_tablets WHERE service_tag_cpu = $1`, [serviceTag]),
+      pool.query(`SELECT *, 'disponibles' as source_table FROM disponibles WHERE service_tag_cpu = $1`, [serviceTag]),
+      pool.query(`SELECT *, 'renuncia' as source_table FROM renuncia WHERE service_tag_cpu = $1`, [serviceTag]),
+      pool.query(`SELECT *, 'danos' as source_table FROM danos WHERE service_tag_cpu = $1`, [serviceTag]),
+    ];
 
-    const asignaciones_port = await pool.query(`SELECT * FROM asignaciones_portatiles WHERE service_tag_cpu = $1`, [tag]);
-    addEvents(asignaciones_port.rows, "assignment");
+    const [pcs, portatiles, tablets, disponibles, renuncias, danos] = await Promise.all(queries);
 
-    const asignaciones_tab = await pool.query(`SELECT * FROM asignaciones_tablets WHERE service_tag_cpu = $1`, [tag]);
-    addEvents(asignaciones_tab.rows, "assignment");
-
-    const disponibles = await pool.query(`SELECT * FROM disponibles WHERE service_tag_cpu = $1`, [tag]);
+    addEvents(pcs.rows, "assignment");
+    addEvents(portatiles.rows, "assignment");
+    addEvents(tablets.rows, "assignment");
     addEvents(disponibles.rows, "available");
-
-    const renuncias = await pool.query(`SELECT * FROM renuncia WHERE service_tag_cpu = $1`, [tag]);
     addEvents(renuncias.rows, "unassignment");
-
-    const danos = await pool.query(`SELECT * FROM danos WHERE service_tag_cpu = $1`, [tag]);
     addEvents(danos.rows, "damage");
 
-    // 3. Ordenar de más nuevo → más antiguo
+    // Sort results from newest to oldest
     results.sort((a, b) => new Date(b.date) - new Date(a.date));
 
     res.json({ history: results });
 
   } catch (err) {
-    console.error(err);
+    console.error("Error fetching history by service tag:", err);
     res.status(500).send("Server error");
   }
 });
+
 
 function extractDate(row) {
   return row.acta?.split("T")[0] || "Sin fecha";
@@ -425,4 +452,77 @@ app.post('/api/danos', async (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+});
+
+
+// Route to move an item from 'disponibles' to 'danos'
+app.post('/api/equipment/:id/mark-damaged', async (req, res) => {
+  const { id } = req.params;
+
+  // Make sure the ID is a valid number
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'ID de equipo inválido.' });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    // Start a transaction
+    await client.query('BEGIN');
+
+    // 1. Find the equipment in the 'disponibles' table
+    const findQuery = 'SELECT * FROM disponibles WHERE id = $1';
+    const findResult = await client.query(findQuery, [id]);
+    const equipment = findResult.rows[0];
+
+    if (!equipment) {
+      // If not found, rollback and send an error
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Equipo no encontrado en la tabla de disponibles.' });
+    }
+
+    // 2. Insert the equipment data into the 'danos' table
+    // IMPORTANT: Make sure the columns in your 'danos' table match these fields.
+    // Add or remove fields as necessary. I'm assuming they are the same.
+    const insertQuery = `
+      INSERT INTO danos (
+        tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
+        marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla,
+        estado_equipo, acta, base, guaya, mouse, teclado, cargador, cable_red, cable_poder,
+        adaptador_pantalla, adaptador_red, adaptador_multipuertos, antena_wireless,
+        base_adicional, cable_poder_adicional, guaya_adicional, pantalla_adicional
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
+        $19, $20, $21, $22, $23, $24, $25, $26
+      )
+    `;
+    const values = [
+      equipment.tipo, equipment.marca_cpu, equipment.referencia_cpu, equipment.service_tag_cpu, equipment.activo_cpu,
+      equipment.marca_pantalla, equipment.referencia_pantalla, equipment.service_tag_pantalla, equipment.activo_pantalla,
+      'Dañado', // estado_equipo
+      new Date(), // acta (sets current date)
+      equipment.base, equipment.guaya, equipment.mouse, equipment.teclado, equipment.cargador, equipment.cable_red, equipment.cable_poder,
+      equipment.adaptador_pantalla, equipment.adaptador_red, equipment.adaptador_multipuertos, equipment.antena_wireless,
+      equipment.base_adicional, equipment.cable_poder_adicional, equipment.guaya_adicional, equipment.pantalla_adicional
+    ];
+    await client.query(insertQuery, values);
+
+    // 3. Delete the equipment from the 'disponibles' table
+    const deleteQuery = 'DELETE FROM disponibles WHERE id = $1';
+    await client.query(deleteQuery, [id]);
+
+    // 4. Commit the transaction
+    await client.query('COMMIT');
+
+    res.status(200).json({ message: 'Equipo movido a la tabla de dañados exitosamente.' });
+
+  } catch (error) {
+    // If any error occurs, rollback the transaction
+    await client.query('ROLLBACK');
+    console.error('Error al mover el equipo a dañados:', error);
+    res.status(500).json({ error: 'Error interno del servidor al procesar la solicitud.' });
+  } finally {
+    // Release the client back to the pool
+    client.release();
+  }
 });
