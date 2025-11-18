@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import MainNavigation from 'components/ui/MainNavigation';
 import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
@@ -17,49 +17,44 @@ const EquipmentHistory = () => {
   const [error, setError] = useState(null);
   const location = useLocation();
 
-  useEffect(() => {
+  const fetchEquipmentData = useCallback(() => {
     const searchParams = new URLSearchParams(location.search);
-    // The component now relies on 'service_tag' which is unique across all tables.
     const serviceTag = searchParams.get('service_tag');
 
     if (serviceTag) {
       setIsLoading(true);
       setError(null);
-      
-      // Fetch equipment details and history concurrently since both depend on the service tag.
+
       Promise.all([
         getEquipmentByServiceTag(serviceTag),
         getHistoryByServiceTag(serviceTag)
       ]).then(([equipment, historyResponse]) => {
-        
         if (equipment) {
           setSelectedEquipment(equipment);
         } else {
-          // If the equipment itself isn't found, it's a critical error.
           throw new Error('No se pudo encontrar el equipo con el service tag especificado.');
         }
-
-        const history = historyResponse?.history || [];
-        setHistoryEntries(history);
-
+        setHistoryEntries(historyResponse?.history || []);
       }).catch(error => {
         console.error("Error fetching equipment data or history:", error);
         setError(error.message || 'Ocurrió un error al cargar los datos del equipo.');
       }).finally(() => {
         setIsLoading(false);
       });
-
     } else {
-      // If no service tag is provided in the URL, there's nothing to show.
       setError('No se ha especificado un service tag de equipo en la URL.');
       setIsLoading(false);
     }
   }, [location.search]);
 
+  useEffect(() => {
+    fetchEquipmentData();
+  }, [fetchEquipmentData]);
+
   const handleExport = () => {
     console.log('Exporting equipment history report...');
   };
-
+  
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -89,7 +84,7 @@ const EquipmentHistory = () => {
     if (selectedEquipment) {
       return (
         <div className="space-y-6">
-          <EquipmentDetailsCard equipment={selectedEquipment} />
+          <EquipmentDetailsCard equipment={selectedEquipment} onDamageReported={fetchEquipmentData} />
           <HistoryFilters onFiltersChange={() => { }} onExport={handleExport} />
           <HistoryTimeline historyEntries={historyEntries} />
         </div>

@@ -2,11 +2,29 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import Icon from '../AppIcon';
 import Button from './Button';
+import { getDisponibles } from '../../services/disponiblesService';
 
 const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  const handleAssignEquipment = async () => {
+    try {
+      const disponibles = await getDisponibles();
+      if (disponibles && disponibles.length > 0) {
+        const firstAvailable = disponibles[0];
+        navigate(`/equipment-assignment?service_tag=${firstAvailable.service_tag_cpu}`);
+      } else {
+        // Handle case where no equipment is available
+        navigate('/equipment-assignment');
+      }
+    } catch (error) {
+      console.error("Failed to fetch available equipment", error);
+      // Handle error, perhaps navigate to an error page or show a notification
+      navigate('/equipment-assignment');
+    }
+  };
 
   const navigationItems = [
     {
@@ -17,7 +35,7 @@ const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
     },
     {
       label: 'Asignar Equipo',
-      path: '/equipment-assignment',
+      action: handleAssignEquipment,
       icon: 'UserPlus',
       tooltip: 'Asignar equipos a empleados'
     },
@@ -35,8 +53,12 @@ const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
     }
   ];
 
-  const handleNavigation = (path) => {
-    navigate(path);
+  const handleNavigation = (item) => {
+    if (item.action) {
+      item.action();
+    } else if (item.path) {
+      navigate(item.path);
+    }
     setIsMobileMenuOpen(false);
   };
 
@@ -66,10 +88,10 @@ const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
         <nav className="hidden lg:flex items-center space-x-1">
           {navigationItems?.map((item) => (
             <Button
-              key={item?.path}
+              key={item?.label}
               variant={isActivePath(item?.path) ? "default" : "ghost"}
               size="sm"
-              onClick={() => handleNavigation(item?.path)}
+              onClick={() => handleNavigation(item)}
               className="flex items-center space-x-2 px-3 py-2"
               title={item?.tooltip}
             >
@@ -118,10 +140,10 @@ const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
           <nav className="px-4 py-2 space-y-1">
             {navigationItems?.map((item) => (
               <Button
-                key={item?.path}
+                key={item?.label}
                 variant={isActivePath(item?.path) ? "default" : "ghost"}
                 size="sm"
-                onClick={() => handleNavigation(item?.path)}
+                onClick={() => handleNavigation(item)}
                 className="w-full justify-start flex items-center space-x-3 px-3 py-3"
               >
                 <Icon name={item?.icon} size={18} />

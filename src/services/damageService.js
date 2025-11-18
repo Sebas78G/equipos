@@ -15,3 +15,18 @@ export const getDanos = async () => {
         throw error;
     }
 };
+
+/**
+ * Reports a piece of equipment as damaged by its service tag.
+ * @param {string} serviceTag The service tag of the equipment to report as damaged.
+ * @returns {Promise<Object>} A promise that resolves to the response from the API.
+ */
+export const reportDamageByServiceTag = async (serviceTag) => {
+    try {
+        const response = await apiClient.post(API_URL, { service_tag: serviceTag });
+        return response.data;
+    } catch (error) {
+        console.error('Error reporting damage:', error);
+        throw error;
+    }
+};

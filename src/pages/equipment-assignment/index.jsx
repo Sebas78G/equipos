@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import MainNavigation from 'components/ui/MainNavigation';
 import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import EquipmentSelectionPanel from './components/EquipmentSelectionPanel';
@@ -37,6 +37,7 @@ const ALL_ACCESSORIES = [
 
 const EquipmentAssignment = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [currentStep, setCurrentStep] = useState(STEPS.EQUIPMENT);
   const [disponibles, setDisponibles] = useState([]);
   const [selectedEquipment, setSelectedEquipment] = useState(null);
@@ -44,19 +45,29 @@ const EquipmentAssignment = () => {
   const [selectedAccessories, setSelectedAccessories] = useState([]);
   const [errors, setErrors] = useState({});
   const [isProcessing, setIsProcessing] = useState(false);
-  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
 
   useEffect(() => {
-    const fetchDisponibles = async () => {
+    const fetchDisponiblesAndSetSelection = async () => {
       try {
         const data = await getDisponibles();
         setDisponibles(data);
+
+        const searchParams = new URLSearchParams(location.search);
+        const serviceTag = searchParams.get('service_tag');
+
+        if (serviceTag && data.length > 0) {
+          const equipmentToSelect = data.find(eq => eq.service_tag_cpu === serviceTag);
+          if (equipmentToSelect) {
+            setSelectedEquipment(equipmentToSelect);
+            setCurrentStep(STEPS.EMPLOYEE); // Skip to the next step
+          }
+        }
       } catch (error) {
         setErrors({ general: 'Error al cargar los equipos disponibles.' });
       }
     };
-    fetchDisponibles();
-  }, []);
+    fetchDisponiblesAndSetSelection();
+  }, [location.search]);
 
   const validateStep = (step) => {
     const newErrors = {};
@@ -136,7 +147,7 @@ const EquipmentAssignment = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <MainNavigation onToggleCollapse={setIsNavCollapsed} />
+      <MainNavigation />
       <div className="pt-16">
         <WorkflowBreadcrumbs />
         <div className="container mx-auto px-4 py-6">

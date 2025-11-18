@@ -1,13 +1,37 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useReactToPrint } from 'react-to-print';
 import Button from '../../components/ui/Button';
 import DeliveryNote from './components/DeliveryNote';
 import Icon from '../../components/AppIcon';
+
+const ALL_ACCESSORIES = [
+    { id: 'base', name: 'Base', type: 'Accesorio', icon: 'Desktop' },
+    { id: 'guaya', name: 'Guaya', type: 'Accesorio', icon: 'Lock' },
+    { id: 'mouse', name: 'Mouse', type: 'Accesorio', icon: 'Mouse' },
+    { id: 'teclado', name: 'Teclado', type: 'Accesorio', icon: 'Keyboard' },
+    { id: 'cargador', name: 'Cargador', type: 'Accesorio', icon: 'Plug' },
+    { id: 'cable_red', name: 'Cable de red', type: 'Accesorio', icon: 'Cable' },
+    { id: 'cable_poder', name: 'Cable de poder', type: 'Accesorio', icon: 'Zap' },
+    { id: 'adaptador_pantalla', name: 'Adaptador de pantalla', type: 'Elemento adicional', icon: 'Monitor' },
+    { id: 'adaptador_red', name: 'Adaptador de red', type: 'Elemento adicional', icon: 'Router' },
+    { id: 'adaptador_multipuertos', name: 'Adaptador Multipuertos', type: 'Elemento adicional', icon: 'Usb' },
+    { id: 'antena_wireless', name: 'Antena Wireless', type: 'Elemento adicional', icon: 'Wifi' },
+    { id: 'base_adicional', name: 'Base adicional', type: 'Elemento adicional', icon: 'Desktop' },
+    { id: 'cable_poder_adicional', name: 'Cable de poder adicional', type: 'Elemento adicional', icon: 'Zap' },
+    { id: 'guaya_adicional', name: 'Guaya adicional', type: 'Elemento adicional', icon: 'Lock' },
+    { id: 'pantalla_adicional', name: 'Pantalla adicional', type: 'Elemento adicional', icon: 'Monitor' },
+];
 
 const DocumentGeneration = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { selectedEquipment, employeeData, selectedAccessories } = location.state || {};
+  const deliveryNoteRef = useRef();
+
+  const handlePrint = useReactToPrint({
+    content: () => deliveryNoteRef.current,
+  });
 
   if (!selectedEquipment || !employeeData) {
     return (
@@ -23,15 +47,6 @@ const DocumentGeneration = () => {
       </div>
     );
   }
-
-  const handlePrint = () => {
-    const printContent = document.getElementById('delivery-note-container').innerHTML;
-    const originalContent = document.body.innerHTML;
-    document.body.innerHTML = printContent;
-    window.print();
-    document.body.innerHTML = originalContent;
-    window.location.reload(); // Recargar para restaurar los scripts y el estado
-  };
 
   return (
     <div className="bg-gray-100">
@@ -51,15 +66,15 @@ const DocumentGeneration = () => {
             </div>
         </div>
 
-      <main className="container mx-auto px-6 py-24">
-        <div className="bg-white rounded-lg shadow-lg mx-auto max-w-4xl">
-          <div id="delivery-note-container">
+      <main className="container mx-auto px-6 py-24 flex justify-center">
+        <div className="bg-white rounded-lg shadow-lg overflow-auto">
             <DeliveryNote 
+                ref={deliveryNoteRef}
                 equipment={selectedEquipment} 
                 employee={employeeData} 
                 accessories={selectedAccessories} 
+                allAccessories={ALL_ACCESSORIES}
             />
-          </div>
         </div>
       </main>
     </div>

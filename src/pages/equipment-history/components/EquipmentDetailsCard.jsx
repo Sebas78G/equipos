@@ -1,5 +1,9 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../../../components/AppIcon';
+import resolveEquipmentImage from '../../../utils/imageResolver';
+import Button from '../../../components/ui/Button';
+import { reportDamageByServiceTag } from '../../../services/damageService';
 
 // Helper to format date if it exists
 const formatDate = (dateString) => {
@@ -17,13 +21,16 @@ const formatDate = (dateString) => {
   }
 };
 
-const EquipmentDetailsCard = ({ equipment }) => {
+const EquipmentDetailsCard = ({ equipment, onDamageReported }) => {
+  const navigate = useNavigate();
   // equipment can be null or empty, so we need to guard against that
   if (!equipment || Object.keys(equipment).length === 0) {
     // Or render a loading state/placeholder
     return <div className="bg-card border border-border rounded-lg shadow-card p-6 text-center">Cargando detalles del equipo...</div>;
   }
   
+  const imagePath = resolveEquipmentImage(equipment.referencia_cpu);
+
   // Deriving status from the source table provided by the backend
   const getStatusInfo = (sourceTable) => {
     switch (sourceTable) {
@@ -53,14 +60,32 @@ const EquipmentDetailsCard = ({ equipment }) => {
     return 'Package';
   };
 
+  const handleReportDamage = async () => {
+    try {
+      await reportDamageByServiceTag(equipment.service_tag_cpu);
+      if(onDamageReported) onDamageReported();
+    } catch (error) {
+      console.error('Failed to report damage', error);
+      // Optionally, show an error message to the user
+    }
+  };
+
+  const handleReassign = () => {
+    navigate(`/equipment-assignment?service_tag=${equipment.service_tag_cpu}`);
+  };
+
   return (
     <div className="bg-card border border-border rounded-lg shadow-card p-6">
       <div className="flex flex-col lg:flex-row gap-6">
         {/* Equipment Image - Placeholder */}
         <div className="flex-shrink-0">
-          <div className="w-48 h-32 bg-muted rounded-lg flex items-center justify-center">
-             <Icon name={getTypeIcon(equipment.tipo)} size={48} className="text-muted-foreground" />
-          </div>
+        {imagePath ? (
+            <img src={imagePath} alt={`Imagen de ${equipment.referencia_cpu}`} className="w-48 h-32 object-contain rounded-lg" />
+          ) : (
+            <div className="w-48 h-32 bg-muted rounded-lg flex items-center justify-center">
+              <Icon name={getTypeIcon(equipment.tipo)} size={48} className="text-muted-foreground" />
+            </div>
+          )}
         </div>
 
         {/* Equipment Information */}
@@ -81,6 +106,10 @@ const EquipmentDetailsCard = ({ equipment }) => {
             </div>
             
             <div className="flex flex-col sm:items-end space-y-2">
+            <div className='flex items-center space-x-2'>
+            <Button variant="outline" size="sm" onClick={handleReportDamage}><Icon name="ShieldAlert" className="mr-2 h-4 w-4" />Reportar Daño</Button>
+            <Button size="sm" onClick={handleReassign}><Icon name="UserPlus" className="mr-2 h-4 w-4" />Asignar</Button>
+            </div>
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                 {statusInfo.text}
               </span>
