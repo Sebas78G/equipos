@@ -28,12 +28,6 @@ const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
       tooltip: 'Gestionar cambios y transiciones de equipos'
     },
     {
-      label: 'Historial de Equipos',
-      path: '/equipment-history',
-      icon: 'History',
-      tooltip: 'Ver historial completo de equipos'
-    },
-    {
       label: 'Generar Documentos',
       path: '/document-generation',
       icon: 'FileText',
@@ -60,9 +54,7 @@ const MainNavigation = ({ isCollapsed = false, onToggleCollapse }) => {
         {/* Logo Section */}
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Icon name="Package" size={20} color="white" />
-            </div>
+            <img src="/expreso.png" alt="Equipos EVT" className="w-8 h-8" />
             <div className="hidden sm:block">
               <h1 className="text-lg font-semibold text-foreground">Equipos EVT</h1>
               <p className="text-xs text-muted-foreground">EXPRESO VIAJES Y TURISMO</p>

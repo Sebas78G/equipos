@@ -1,178 +1,115 @@
-import React, { useState } from 'react';
-import Icon from '../../../components/AppIcon';
-import Button from '../../../components/ui/Button';
-import Input from '../../../components/ui/Input';
+import React, { useState, useRef, useEffect } from 'react';
+import Icon from 'components/AppIcon';
+import Button from 'components/ui/Button';
+import Input from 'components/ui/Input';
 
-const EquipmentSearchBar = ({ onSearch, onEquipmentSelect, recentSearches = [] }) => {
-  const [searchQuery, setSearchQuery] = useState('');
+const EquipmentSearchBar = ({ onSearch, onEquipmentSelect, recentSearches }) => {
+  const [query, setQuery] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef(null);
 
-  const mockEquipmentSuggestions = [
-    { serviceTag: 'ST001234', type: 'PC', brand: 'Dell', model: 'OptiPlex 7090' },
-    { serviceTag: 'ST001235', type: 'Portátil', brand: 'HP', model: 'EliteBook 840' },
-    { serviceTag: 'ST001236', type: 'Tablet', brand: 'Samsung', model: 'Galaxy Tab S8' },
-    { serviceTag: 'ST001237', type: 'PC', brand: 'Lenovo', model: 'ThinkCentre M720' },
-    { serviceTag: 'ST001238', type: 'Portátil', brand: 'Dell', model: 'Latitude 5520' }
-  ];
+  // Mock suggestions based on query
+  const getAutocompleteSuggestions = (q) => {
+    if (!q) return [];
+    const suggestions = [
+      { id: 'ST001234', type: 'PC', serviceTag: 'ST001234' },
+      { id: 'ST005678', type: 'Portátil', serviceTag: 'ST005678' },
+      { id: 'ST009012', type: 'Tablet', serviceTag: 'ST009012' },
+    ];
+    return suggestions.filter(s => s.serviceTag.toLowerCase().includes(q.toLowerCase()));
+  };
 
-  const handleSearch = (query = searchQuery) => {
-    if (query?.trim()) {
-      if (onSearch) {
-        onSearch(query?.trim());
-      }
+  const autocompleteSuggestions = getAutocompleteSuggestions(query);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (query.trim()) {
+      onSearch(query.trim());
       setShowSuggestions(false);
+      searchRef.current.blur();
     }
   };
 
-  const handleInputChange = (e) => {
-    const value = e?.target?.value;
-    setSearchQuery(value);
-    setShowSuggestions(value?.length > 0);
-  };
-
-  const handleSuggestionClick = (equipment) => {
-    setSearchQuery(equipment?.serviceTag);
+  const handleSelectSuggestion = (equipment) => {
+    setQuery(equipment.serviceTag);
+    onEquipmentSelect(equipment);
     setShowSuggestions(false);
-    if (onEquipmentSelect) {
-      onEquipmentSelect(equipment);
-    }
   };
 
-  const handleKeyPress = (e) => {
-    if (e?.key === 'Enter') {
-      handleSearch();
-    }
-    if (e?.key === 'Escape') {
-      setShowSuggestions(false);
-    }
+  const handleFocus = () => {
+    setIsFocused(true);
+    setShowSuggestions(true);
   };
 
-  const filteredSuggestions = mockEquipmentSuggestions?.filter(equipment =>
-    equipment?.serviceTag?.toLowerCase()?.includes(searchQuery?.toLowerCase()) ||
-    equipment?.brand?.toLowerCase()?.includes(searchQuery?.toLowerCase()) ||
-    equipment?.model?.toLowerCase()?.includes(searchQuery?.toLowerCase())
-  );
+  const handleBlur = () => {
+    // Delay hiding suggestions to allow click events to register
+    setTimeout(() => {
+      if (searchRef.current && !searchRef.current.contains(document.activeElement)) {
+        setIsFocused(false);
+        setShowSuggestions(false);
+      }
+    }, 200);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setShowSuggestions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   return (
-    <div className="relative mb-6">
-      <div className="bg-card border border-border rounded-lg shadow-card p-4">
-        <div className="flex items-center space-x-3 mb-4">
-          <Icon name="Search" size={20} className="text-muted-foreground" />
-          <h3 className="font-semibold text-foreground">Buscar Equipo</h3>
-        </div>
-
-        <div className="relative">
-          <div className="flex gap-2">
-            <div className="flex-1 relative">
-              <Input
-                type="text"
-                placeholder="Ingrese service tag, marca o modelo del equipo..."
-                value={searchQuery}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyPress}
-                onFocus={() => setShowSuggestions(searchQuery?.length > 0)}
-                className="pr-10"
-              />
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                <Icon name="Search" size={16} className="text-muted-foreground" />
-              </div>
-            </div>
-            
-            <Button
-              variant="default"
-              onClick={() => handleSearch()}
-              disabled={!searchQuery?.trim()}
-            >
-              <Icon name="Search" size={16} className="mr-2" />
-              Buscar
-            </Button>
+    <div className="bg-card border border-border rounded-lg shadow-card p-4 mb-6" ref={searchRef}>
+      <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-grow">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <Icon name="Search" size={16} className="text-muted-foreground" />
           </div>
-
-          {/* Search Suggestions Dropdown */}
-          {showSuggestions && filteredSuggestions?.length > 0 && (
-            <div className="absolute top-full left-0 right-0 mt-1 bg-popover border border-border rounded-lg shadow-modal z-50 max-h-64 overflow-y-auto">
+          <Input
+            type="search"
+            placeholder="Ingrese service tag, marca o modelo del equipo..."
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            className="pl-10 w-full"
+          />
+          {isFocused && query && (
+            <div className="absolute z-10 w-full mt-1 bg-card border border-border rounded-lg shadow-lg">
               <div className="p-2">
-                <p className="text-xs font-medium text-muted-foreground mb-2 px-2">Equipos encontrados</p>
-                {filteredSuggestions?.map((equipment, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleSuggestionClick(equipment)}
-                    className="w-full text-left px-3 py-2 hover:bg-muted/50 rounded-md transition-smooth"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-medium text-foreground text-sm">{equipment?.serviceTag}</p>
-                        <p className="text-xs text-muted-foreground">
-                          {equipment?.brand} {equipment?.model} - {equipment?.type}
-                        </p>
-                      </div>
-                      <Icon name="ArrowRight" size={14} className="text-muted-foreground" />
-                    </div>
-                  </button>
-                ))}
+                <p className="text-xs font-semibold text-muted-foreground px-2 py-1">Sugerencias</p>
+                {autocompleteSuggestions.length > 0 ? (
+                  <ul>
+                    {autocompleteSuggestions.map(item => (
+                      <li key={item.id}>
+                        <button
+                          type="button"
+                          onClick={() => handleSelectSuggestion(item)}
+                          className="w-full text-left px-3 py-2 text-sm rounded-md hover:bg-muted"
+                        >
+                          {item.serviceTag} <span className="text-muted-foreground">({item.type})</span>
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-sm text-muted-foreground px-3 py-2">No se encontraron sugerencias.</p>
+                )}
               </div>
             </div>
           )}
         </div>
-
-        {/* Recent Searches */}
-        {recentSearches?.length > 0 && !showSuggestions && (
-          <div className="mt-4 pt-4 border-t border-border">
-            <p className="text-xs font-medium text-muted-foreground mb-2">Búsquedas recientes</p>
-            <div className="flex flex-wrap gap-2">
-              {recentSearches?.slice(0, 5)?.map((search, index) => (
-                <Button
-                  key={index}
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => {
-                    setSearchQuery(search);
-                    handleSearch(search);
-                  }}
-                  className="text-xs"
-                >
-                  <Icon name="Clock" size={12} className="mr-1" />
-                  {search}
-                </Button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Quick Actions */}
-        <div className="mt-4 pt-4 border-t border-border">
-          <p className="text-xs font-medium text-muted-foreground mb-2">Acciones rápidas</p>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSearch('PC')}
-              className="text-xs"
-            >
-              <Icon name="Monitor" size={12} className="mr-1" />
-              Ver todas las PC
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSearch('Portátil')}
-              className="text-xs"
-            >
-              <Icon name="Laptop" size={12} className="mr-1" />
-              Ver portátiles
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => handleSearch('Tablet')}
-              className="text-xs"
-            >
-              <Icon name="Tablet" size={12} className="mr-1" />
-              Ver tablets
-            </Button>
-          </div>
-        </div>
-      </div>
+        <Button type="submit" className="w-full sm:w-auto">
+          <Icon name="Search" size={16} className="mr-2 sm:hidden" />
+          Buscar
+        </Button>
+      </form>
     </div>
   );
 };

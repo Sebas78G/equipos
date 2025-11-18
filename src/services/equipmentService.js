@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient from '../api/apiClient.js';
 
 export const getEquipment = async () => {
   try {
@@ -13,39 +13,22 @@ export const getEquipment = async () => {
 export const getEquipmentById = async (id) => {
   try {
     const response = await apiClient.get(`/equipment/${id}`);
-    return response.data;
+    // The API returns data in a mix of a top-level object and a nested 'equipment' object.
+    // We merge them to create a single, flat object for the form.
+    const mergedData = { ...response.data, ...response.data.equipment };
+    return mergedData;
   } catch (error) {
     console.error(`Error fetching equipment with id ${id}`, error);
     throw error;
   }
 };
 
-export const createEquipment = async (equipment) => {
+export const updateEquipment = async (id, equipmentData) => {
   try {
-    const response = await apiClient.post('/equipment', equipment);
-    return response.data;
-  } catch (error) {
-    console.error('Error creating equipment', error);
-    throw error;
-  }
-};
-
-export const updateEquipment = async (id, equipment) => {
-  try {
-    const response = await apiClient.put(`/equipment/${id}`, equipment);
+    const response = await apiClient.put(`/equipment/${id}`, equipmentData);
     return response.data;
   } catch (error) {
     console.error(`Error updating equipment with id ${id}`, error);
-    throw error;
-  }
-};
-
-export const deleteEquipment = async (id) => {
-  try {
-    const response = await apiClient.delete(`/equipment/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error deleting equipment with id ${id}`, error);
     throw error;
   }
 };

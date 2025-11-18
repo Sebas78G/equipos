@@ -6,6 +6,7 @@ import Button from './Button';
 const WorkflowBreadcrumbs = ({ 
   customBreadcrumbs = null,
   showHome = true,
+  showBack = false,
   separator = 'ChevronRight'
 }) => {
   const location = useLocation();
@@ -63,33 +64,56 @@ const WorkflowBreadcrumbs = ({
     }
 
     // Add current page
-    breadcrumbs?.push({
-      label: currentRoute?.label,
-      path: currentPath,
-      icon: currentRoute?.icon,
-      isClickable: false,
-      isCurrent: true
-    });
+    if (currentRoute) {
+      breadcrumbs?.push({
+        label: currentRoute.label,
+        path: currentPath,
+        icon: currentRoute.icon,
+        isClickable: false,
+        isCurrent: true
+      });
+    }
 
     return breadcrumbs;
   };
 
   const breadcrumbs = generateBreadcrumbs();
 
-  if (breadcrumbs?.length === 0) {
+  if (breadcrumbs?.length === 0 && !showBack) {
     return null;
   }
 
   const handleBreadcrumbClick = (path) => {
     navigate(path);
   };
+  
+  const handleBackClick = () => {
+    navigate(-1);
+  };
 
   return (
     <nav className="flex items-center space-x-2 py-3 px-4 bg-background border-b border-border" aria-label="Breadcrumb">
       <div className="flex items-center space-x-2 text-sm">
+        {showBack && (
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBackClick}
+              className="flex items-center space-x-2 px-2 py-1 h-auto hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-smooth"
+            >
+              <Icon name="ArrowLeft" size={14} />
+            </Button>
+            {breadcrumbs?.length > 0 && <Icon 
+              name={separator} 
+              size={14} 
+              className="text-muted-foreground" 
+            />}
+          </div>
+        )}
         {breadcrumbs?.map((crumb, index) => (
           <div key={index} className="flex items-center space-x-2">
-            {index > 0 && (
+            {(index > 0 || showBack) && (
               <Icon 
                 name={separator} 
                 size={14} 

@@ -1,61 +1,66 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Icon from '../AppIcon';
 import Button from './Button';
 
-const DashboardTabs = ({ activeTab = 'todos', onTabChange }) => {
+const DashboardTabs = ({ activeTab = 'todos', onTabChange, counts }) => {
   const [currentTab, setCurrentTab] = useState(activeTab);
+  const [tabItems, setTabItems] = useState([]);
 
-  const tabItems = [
-    {
-      id: 'todos',
-      label: 'Todos',
-      icon: 'Grid3X3',
-      count: 156,
-      description: 'Ver todos los equipos'
-    },
-    {
-      id: 'pc',
-      label: 'PC',
-      icon: 'Monitor',
-      count: 45,
-      description: 'Computadoras de escritorio'
-    },
-    {
-      id: 'portatil',
-      label: 'Portátil',
-      icon: 'Laptop',
-      count: 67,
-      description: 'Computadoras portátiles'
-    },
-    {
-      id: 'tablet',
-      label: 'Tablet',
-      icon: 'Tablet',
-      count: 23,
-      description: 'Dispositivos tablet'
-    },
-    {
-      id: 'asignados',
-      label: 'Asignados',
-      icon: 'UserCheck',
-      count: 89,
-      description: 'Equipos asignados a empleados'
-    },
-    {
-      id: 'disponible',
-      label: 'Disponible',
-      icon: 'CheckCircle',
-      count: 45,
-      description: 'Equipos disponibles para asignación'
-    },
-    {
-      id: 'danados',
-      label: 'Dañados',
-      icon: 'AlertTriangle',
-      count: 12,
-      description: 'Equipos que requieren reparación'
+  useEffect(() => {
+    if (counts) {
+      setTabItems([
+        {
+          id: 'todos',
+          label: 'Todos',
+          icon: 'Grid3X3',
+          count: counts.total || 0,
+          description: 'Ver todos los equipos'
+        },
+        {
+          id: 'pc',
+          label: 'PC',
+          icon: 'Monitor',
+          count: counts.pc || 0,
+          description: 'Computadoras de escritorio'
+        },
+        {
+          id: 'portatil',
+          label: 'Portátil',
+          icon: 'Laptop',
+          count: counts.portatil || 0,
+          description: 'Computadoras portátiles'
+        },
+        {
+          id: 'tablet',
+          label: 'Tablet',
+          icon: 'Tablet',
+          count: counts.tablet || 0,
+          description: 'Dispositivos tablet'
+        },
+        {
+          id: 'asignados',
+          label: 'Asignados',
+          icon: 'UserCheck',
+          count: counts.asignados || 0,
+          description: 'Equipos asignados a empleados'
+        },
+        {
+          id: 'disponible',
+          label: 'Disponible',
+          icon: 'CheckCircle',
+          count: counts.disponible || 0,
+          description: 'Equipos disponibles para asignación'
+        },
+        {
+          id: 'danados',
+          label: 'Dañados',
+          icon: 'AlertTriangle',
+          count: counts.danados || 0,
+          description: 'Equipos que requieren reparación'
+        }
+      ]);
     }
-  ];
+  }, [counts]);
 
   const handleTabClick = (tabId) => {
     setCurrentTab(tabId);

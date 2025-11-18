@@ -28,7 +28,8 @@ const StatusOverview = ({ statusData }) => {
     }
   };
 
-  const totalEquipment = statusData?.reduce((sum, item) => sum + item?.count, 0);
+  const totalEquipment = statusData?.reduce((sum, item) => sum + Number(item?.count || 0), 0);
+
 
   return (
     <div className="bg-card border border-border rounded-lg p-6 shadow-card">
@@ -37,11 +38,11 @@ const StatusOverview = ({ statusData }) => {
         <p className="text-sm text-muted-foreground">Distribución actual del inventario</p>
       </div>
       <div className="space-y-4">
-        {statusData?.map((status) => {
-          const percentage = totalEquipment > 0 ? (status?.count / totalEquipment) * 100 : 0;
-          
+        {statusData?.map((status, index) => {
+          const percentage = totalEquipment > 0 ? (Number(status?.count) / totalEquipment) * 100 : 0;
+
           return (
-            <div key={status?.status} className="space-y-2">
+            <div key={`${status?.status}-${index}`} className="space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${getStatusColor(status?.status)}`}>
@@ -52,19 +53,21 @@ const StatusOverview = ({ statusData }) => {
                     <p className="text-xs text-muted-foreground">{status?.description}</p>
                   </div>
                 </div>
-                
+
                 <div className="text-right">
-                  <p className="text-lg font-bold text-foreground">{status?.count}</p>
-                  <p className="text-xs text-muted-foreground">{percentage?.toFixed(1)}%</p>
+                  <p className="text-lg font-bold text-foreground">{Number(status?.count) || 0}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {Number.isFinite(percentage) ? percentage.toFixed(1) : 0}%
+                  </p>
                 </div>
               </div>
-              {/* Progress Bar */}
+              {/* Progress bar */}
               <div className="w-full bg-muted rounded-full h-2">
-                <div 
+                <div
                   className={`h-2 rounded-full transition-all duration-300 ${
                     status?.status === 'Asignados' ? 'bg-primary' :
                     status?.status === 'Disponible' ? 'bg-success' :
-                    status?.status === 'Dañados'? 'bg-error' : 'bg-muted-foreground'
+                    status?.status === 'Dañados' ? 'bg-error' : 'bg-muted-foreground'
                   }`}
                   style={{ width: `${percentage}%` }}
                 />
@@ -72,6 +75,7 @@ const StatusOverview = ({ statusData }) => {
             </div>
           );
         })}
+
       </div>
       {/* Total Summary */}
       <div className="mt-6 pt-6 border-t border-border">

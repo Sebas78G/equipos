@@ -1,14 +1,11 @@
 import React from 'react';
-import Icon from 'components/AppIcon';
 
 const LoginHeader = () => {
   return (
     <div className="text-center mb-8">
       {/* Company Logo */}
       <div className="flex justify-center mb-6">
-        <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center shadow-lg">
-          <Icon name="Package" size={32} color="white" />
-        </div>
+        <img src="/expreso.png" alt="Equipos EVT" className="w-16 h-16" />
       </div>
 
       {/* Company Name */}

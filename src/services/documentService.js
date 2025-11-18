@@ -1,4 +1,4 @@
-import apiClient from './apiClient';
+import apiClient from '../api/apiClient.js';
 
 export const getDocuments = async () => {
   try {

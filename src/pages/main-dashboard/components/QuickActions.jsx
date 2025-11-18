@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Icon from 'components/AppIcon';
 import Button from 'components/ui/Button';
 
-const QuickActions = () => {
+const QuickActions = ({ stats }) => {
   const navigate = useNavigate();
 
   const quickActions = [
@@ -89,19 +89,19 @@ const QuickActions = () => {
       <div className="mt-6 pt-6 border-t border-border">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-primary">0</p>
+            <p className="text-2xl font-bold text-primary">{stats?.assignmentsToday ?? 0}</p>
             <p className="text-xs text-muted-foreground">Asignaciones Hoy</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-success">0</p>
+            <p className="text-2xl font-bold text-success">{stats?.documentsGenerated ?? 0}</p>
             <p className="text-xs text-muted-foreground">Documentos Generados</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-warning">0</p>
+            <p className="text-2xl font-bold text-warning">{stats?.pendingChanges ?? 0}</p>
             <p className="text-xs text-muted-foreground">Cambios Pendientes</p>
           </div>
-          <div className-="text-center">
-            <p className="text-2xl font-bold text-accent">0</p>
+          <div className="text-center">
+            <p className="text-2xl font-bold text-accent">{stats?.available ?? 0}</p>
             <p className="text-xs text-muted-foreground">Equipos Disponibles</p>
           </div>
         </div>

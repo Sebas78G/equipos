@@ -2,10 +2,16 @@ import React, { useState } from 'react';
 import Icon from 'components/AppIcon';
 import Button from 'components/ui/Button';
 import Input from 'components/ui/Input';
+import { useNavigate } from 'react-router-dom';
 
 const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: 'lastUpdated', direction: 'desc' });
+  const navigate = useNavigate();
+
+  const handleViewDetails = (item) => {
+    navigate(`/equipment-history?id=${item.id}`);
+  };
 
   const getStatusBadge = (status) => {
     const statusConfig = {
@@ -33,22 +39,36 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
     return icons?.[type] || 'Monitor';
   };
 
-  const filteredData = equipmentData?.filter(item =>
-    item?.serviceTag?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-    item?.employeeName?.toLowerCase()?.includes(searchTerm?.toLowerCase()) ||
-    item?.type?.toLowerCase()?.includes(searchTerm?.toLowerCase())
-  );
+  const filteredData = equipmentData
+    ? equipmentData.filter(item => {
+        if (!searchTerm) {
+          return true; // Show all items if search term is empty
+        }
+        const term = searchTerm.toLowerCase();
+        const serviceTag = item.serviceTag?.toLowerCase() || '';
+        const employeeName = item.employeeName?.toLowerCase() || '';
+        const type = item.type?.toLowerCase() || '';
 
-  const sortedData = [...filteredData]?.sort((a, b) => {
+        return serviceTag.includes(term) || employeeName.includes(term) || type.includes(term);
+      })
+    : [];
+
+  const sortedData = [...(filteredData || [])].sort((a, b) => {
     if (sortConfig?.key) {
-      const aValue = a?.[sortConfig?.key];
-      const bValue = b?.[sortConfig?.key];
-      
-      if (sortConfig?.direction === 'asc') {
-        return aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-      } else {
-        return aValue > bValue ? -1 : aValue < bValue ? 1 : 0;
-      }
+        const aValue = a?.[sortConfig.key] ?? '';
+        const bValue = b?.[sortConfig.key] ?? '';
+        
+        if (sortConfig.key === 'lastUpdated') {
+            const dateA = aValue ? new Date(aValue).getTime() : 0;
+            const dateB = bValue ? new Date(bValue).getTime() : 0;
+            return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+        }
+
+        if (sortConfig.direction === 'asc') {
+            return aValue.localeCompare(bValue);
+        } else {
+            return bValue.localeCompare(aValue);
+        }
     }
     return 0;
   });
@@ -60,19 +80,22 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
     });
   };
 
-  const formatDate = (date) => {
-    return new Date(date)?.toLocaleDateString('es-ES', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    if (isNaN(date)) return 'Fecha inválida';
+
+    return date.toLocaleDateString('es-ES', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
     });
   };
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-card">
-      {/* Header */}
       <div className="p-6 border-b border-border">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
           <div>
@@ -106,12 +129,11 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
           </div>
         </div>
       </div>
-      {/* Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead className="bg-muted/50">
             <tr>
-              <th className="px-6 py-3 text-left">
+              <th className="px-6 py-3 text-left w-2/12">
                 <Button
                   variant="ghost"
                   size="sm"
@@ -122,50 +144,47 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
-              <th className="px-6 py-3 text-left">
+              <th className="px-6 py-3 text-center w-2/12">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleSort('serviceTag')}
-                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground"
+                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center"
                 >
                   <span>Service Tag</span>
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
-              <th className="px-6 py-3 text-left">
+              <th className="px-6 py-3 text-center w-2/12">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleSort('employeeName')}
-                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground"
+                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center"
                 >
                   <span>Empleado</span>
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
-              <th className="px-6 py-3 text-left">
+              <th className="px-6 py-3 text-center w-2/12">
                 <span className="font-medium text-muted-foreground">Estado</span>
               </th>
-              <th className="px-6 py-3 text-left">
+              <th className="px-6 py-3 text-center w-4/12">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => handleSort('lastUpdated')}
-                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground"
+                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center"
                 >
                   <span>Última Actualización</span>
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
-              <th className="px-6 py-3 text-right">
-                <span className="font-medium text-muted-foreground">Acciones</span>
-              </th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {sortedData?.map((item) => (
-              <tr key={item?.id} className="hover:bg-muted/30 transition-smooth">
+              <tr key={`${item.id}-${item.serviceTag}`} className="hover:bg-muted transition-colors cursor-pointer" onClick={() => handleViewDetails(item)}>
                 <td className="px-6 py-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
@@ -177,47 +196,26 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <code className="px-2 py-1 bg-muted rounded text-sm font-mono">{item?.serviceTag}</code>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   <div>
-                    <p className="font-medium text-foreground">{item?.employeeName}</p>
+                    <p className="font-medium text-foreground">{item?.employeeName || 'N/A'}</p>
                     <p className="text-xs text-muted-foreground">{item?.area}</p>
                   </div>
                 </td>
-                <td className="px-6 py-4">
+                <td className="px-6 py-4 text-center">
                   {getStatusBadge(item?.status)}
                 </td>
-                <td className="px-6 py-4">
-                  <p className="text-sm text-foreground">{formatDate(item?.lastUpdated)}</p>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEquipmentAction && onEquipmentAction('view', item)}
-                      title="Ver detalles"
-                    >
-                      <Icon name="Eye" size={16} />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onEquipmentAction && onEquipmentAction('edit', item)}
-                      title="Editar"
-                    >
-                      <Icon name="Edit" size={16} />
-                    </Button>
-                  </div>
+                <td className="px-6 py-4 text-center">
+                  <p className="text-sm text-foreground whitespace-nowrap">{formatDate(item?.lastUpdated)}</p>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      {/* Empty State */}
       {sortedData?.length === 0 && (
         <div className="p-12 text-center">
           <div className="w-16 h-16 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
@@ -225,7 +223,7 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
           </div>
           <h3 className="text-lg font-medium text-foreground mb-2">No se encontraron equipos</h3>
           <p className="text-muted-foreground">
-            {searchTerm ? 'Intenta con otros términos de búsqueda' : 'No hay equipos registrados'}
+            {searchTerm ? 'Intenta con otros términos de búsqueda' : 'No hay equipos registrados actualmente.'}
           </p>
         </div>
       )}

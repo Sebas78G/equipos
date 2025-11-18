@@ -3,6 +3,7 @@ import Icon from '../../../components/AppIcon';
 import Image from '../../../components/AppImage';
 
 const EquipmentDetailsCard = ({ equipment }) => {
+
   const getStatusColor = (status) => {
     switch (status?.toLowerCase()) {
       case 'asignado':
