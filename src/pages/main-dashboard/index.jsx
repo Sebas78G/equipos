@@ -27,10 +27,10 @@ const MainDashboard = () => {
 
   const handleMetricClick = (metricType) => {
     const tabMapping = {
-      'Total': 'todos',
-      'PCs': 'pc',
-      'Portátiles': 'portatil',
-      'Tablets': 'tablet',
+      'Todos': 'todos',
+      'PC': 'pc',
+      'Portátil': 'portatil',
+      'Tablet': 'tablet',
     };
     if (tabMapping[metricType]) {
       setActiveTab(tabMapping[metricType]);
@@ -95,16 +95,16 @@ const MainDashboard = () => {
   };
 
   const equipmentMetrics = [
-    { title: 'Total', count: dashboardCounts.total, icon: 'Computer', color: 'primary' },
-    { title: 'PCs', count: dashboardCounts.pc, icon: 'Monitor', color: 'success' },
-    { title: 'Portátiles', count: dashboardCounts.portatil, icon: 'Laptop', color: 'warning' },
-    { title: 'Tablets', count: dashboardCounts.tablet, icon: 'Tablet', color: 'danger' },
+    { title: 'Todos', count: dashboardCounts.total, icon: 'Computer', color: 'primary', description: `${dashboardCounts.disponible} disponibles` },
+    { title: 'PC', count: dashboardCounts.pc, icon: 'Monitor', color: 'success', description: `${dashboardCounts.disponiblePc} disponibles` },
+    { title: 'Portátil', count: dashboardCounts.portatil, icon: 'Laptop', color: 'warning', description: `${dashboardCounts.disponiblePortatil} disponibles` },
+    { title: 'Tablet', count: dashboardCounts.tablet, icon: 'Tablet', color: 'danger', description: `${dashboardCounts.disponibleTablet} disponibles` },
   ];
 
   const statusData = [
-    { name: 'Disponible', value: dashboardCounts.disponible, color: '#34d399' },
-    { name: 'Asignado', value: dashboardCounts.asignados, color: '#f59e0b' },
-    { name: 'Dañado', value: dashboardCounts.danados, color: '#ef4444' },
+    { status: 'PCs Disponibles', count: dashboardCounts.disponiblePc, type: 'Disponible', icon: 'Monitor' },
+    { status: 'Portátiles Disponibles', count: dashboardCounts.disponiblePortatil, type: 'Disponible', icon: 'Laptop' },
+    { status: 'Tablets Disponibles', count: dashboardCounts.disponibleTablet, type: 'Disponible', icon: 'Tablet' },
   ];
 
   if (loading) {
