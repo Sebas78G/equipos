@@ -445,6 +445,153 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+app.get('/api/equipment/acta/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+
+    if (!serviceTag) {
+        return res.status(400).json({ msg: 'Service tag is required' });
+    }
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets'];
+        let equipment = null;
+        let sourceTable = null;
+
+        // Buscar el equipo en todas las tablas
+        for (const table of tables) {
+            const result = await pool.query(
+                `SELECT * FROM ${table} WHERE service_tag_cpu = $1`, 
+                [serviceTag]
+            );
+            if (result.rows.length > 0) {
+                equipment = result.rows[0];
+                sourceTable = table;
+                break;
+            }
+        }
+
+        if (!equipment) {
+            return res.status(404).json({ msg: `Equipment with service tag ${serviceTag} not found` });
+        }
+
+        // Verificar que existe el acta y es un Buffer
+        if (!equipment.acta) {
+            return res.status(404).json({ msg: 'No PDF found for this equipment' });
+        }
+
+        // Si el acta es un Buffer, enviarlo como PDF
+        if (Buffer.isBuffer(equipment.acta)) {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="acta_${serviceTag}.pdf"`);
+            res.send(equipment.acta);
+        } else {
+            // Si no es un Buffer, intentar parsearlo o devolver error
+            console.error('Acta is not a Buffer:', typeof equipment.acta);
+            res.status(500).json({ msg: 'PDF format is invalid' });
+        }
+
+    } catch (err) {
+        console.error("Error fetching PDF by service tag:", err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// ============================
+// MEJORA AL ENDPOINT EXISTENTE
+// ============================
+
+// Mejorar el endpoint GET /api/equipment/by-tag/:serviceTag
+// Reemplazar el existente con esta versión mejorada
+
+app.get('/api/equipment/by-tag/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+    const { includeActa } = req.query; // Parámetro opcional para incluir o no el acta
+
+    if (!serviceTag) {
+        return res.status(400).json({ msg: 'Service tag is required' });
+    }
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles'];
+        let equipment = null;
+
+        for (const table of tables) {
+            const result = await pool.query(`SELECT * FROM ${table} WHERE service_tag_cpu = $1`, [serviceTag]);
+            if (result.rows.length > 0) {
+                equipment = result.rows[0];
+                equipment.source_table = table;
+                
+                // Si no se requiere el acta completo, solo enviar metadata
+                if (equipment.acta && !includeActa) {
+                    equipment.actaMetadata = {
+                        exists: true,
+                        type: Buffer.isBuffer(equipment.acta) ? 'pdf' : typeof equipment.acta,
+                        size: Buffer.isBuffer(equipment.acta) ? equipment.acta.length : 0
+                    };
+                    // No enviar el Buffer completo a menos que se solicite explícitamente
+                    delete equipment.acta;
+                }
+                
+                break;
+            }
+        }
+
+        if (equipment) {
+            res.json(equipment);
+        } else {
+            res.status(404).json({ msg: `Equipment with service tag ${serviceTag} not found in any table` });
+        }
+    } catch (err) {
+        console.error("Error fetching equipment by service tag:", err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// ============================
+// UTILIDAD PARA DEBUGGING
+// ============================
+
+// Endpoint para verificar el formato del acta (solo para desarrollo/debugging)
+app.get('/api/debug/acta/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets'];
+        
+        for (const table of tables) {
+            const result = await pool.query(
+                `SELECT service_tag_cpu, acta FROM ${table} WHERE service_tag_cpu = $1`, 
+                [serviceTag]
+            );
+            
+            if (result.rows.length > 0) {
+                const equipment = result.rows[0];
+                
+                const info = {
+                    serviceTag: equipment.service_tag_cpu,
+                    actaExists: !!equipment.acta,
+                    actaType: typeof equipment.acta,
+                    isBuffer: Buffer.isBuffer(equipment.acta),
+                    size: Buffer.isBuffer(equipment.acta) ? equipment.acta.length : 0,
+                    firstBytes: Buffer.isBuffer(equipment.acta) 
+                        ? Array.from(equipment.acta.slice(0, 10))
+                        : null,
+                    isPDF: Buffer.isBuffer(equipment.acta) 
+                        ? equipment.acta.slice(0, 4).toString() === '%PDF'
+                        : false
+                };
+                
+                return res.json(info);
+            }
+        }
+        
+        res.status(404).json({ msg: 'Equipment not found' });
+    } catch (err) {
+        console.error("Error in debug endpoint:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 app.get('/api/equipment/acta/:serviceTag', async (req, res) => {
     const { serviceTag } = req.params;

@@ -49,7 +49,7 @@ const MainDashboard = () => {
   };
 
   const handleEquipmentAction = (action, equipment = null) => {
-    if (!equipment || !equipment.serviceTag) return; 
+    if (!equipment || !equipment.serviceTag) return;
 
     switch (action) {
       case 'refresh':
