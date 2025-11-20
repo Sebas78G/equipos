@@ -5,13 +5,14 @@ import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import MetricsCard from './components/MetricsCard';
 import EquipmentTable from './components/EquipmentTable';
 import StatusOverview from './components/StatusOverview';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { getDashboardData, updateMaintenanceDate } from 'services/dashboardService';
 import Spinner from '../../components/ui/Spinner';
 import ErrorDisplay from '../../components/ui/ErrorDisplay';
 
 const MainDashboard = () => {
-  const [activeTab, setActiveTab] = useState('todos');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState(location.state?.activeTab || 'todos');
   const [refreshKey, setRefreshKey] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -87,6 +88,12 @@ const MainDashboard = () => {
     fetchData();
   }, [fetchData, refreshKey]);
 
+  useEffect(() => {
+    if (location.state?.activeTab) {
+      setActiveTab(location.state.activeTab);
+    }
+  }, [location.state]);
+
   const getFilteredEquipmentData = () => {
     if (!equipmentData) return [];
     switch (activeTab) {
@@ -111,7 +118,7 @@ const MainDashboard = () => {
     { title: 'Todos', count: dashboardCounts.total, icon: 'Computer', color: 'primary', description: `${dashboardCounts.disponible} disponibles` },
     { title: 'PC', count: dashboardCounts.pc, icon: 'Monitor', color: 'success', description: `${dashboardCounts.disponiblePc} disponibles` },
     { title: 'Portátil', count: dashboardCounts.portatil, icon: 'Laptop', color: 'warning', description: `${dashboardCounts.disponiblePortatil} disponibles` },
-    { title: 'Tablet', count: dashboardCounts.tablet, icon: 'Tablet', color: 'danger', description: `${dashboardCounts.disponibleTablet} disponibles` },
+    { title: 'Tablet', count: dashboardCounts.tablet, icon: 'danger', description: `${dashboardCounts.disponibleTablet} disponibles` },
   ];
 
   const statusData = [

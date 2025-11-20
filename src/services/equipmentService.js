@@ -1,57 +1,35 @@
 import apiClient from '../api/apiClient';
 
-// Fetches all equipment from the backend
-export const getEquipment = async () => {
-  try {
-    const response = await apiClient.get('/equipment');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching all equipment', error);
-    throw error;
-  }
-};
-
-// Fetches a single piece of equipment by its prefixed ID (e.g., "pc-123", "disponible-45"). DEPRECATED.
-export const getEquipmentById = async (id) => {
-  try {
-    const [type, numericId] = id.split('-');
-    const response = await apiClient.get(`/equipment/${type}/${numericId}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching equipment with id ${id}` , error);
-    throw error;
-  }
-};
-
-// Fetches equipment by its unique service tag.
+/**
+ * Fetches a single piece of equipment by its service tag from any table.
+ * @param {string} serviceTag The service tag of the equipment.
+ * @returns {Promise<Object>} A promise that resolves to the equipment data.
+ */
 export const getEquipmentByServiceTag = async (serviceTag) => {
   try {
     const response = await apiClient.get(`/equipment/by-tag/${serviceTag}`);
     return response.data;
   } catch (error) {
-    console.error(`Error fetching equipment with service tag ${serviceTag}`, error);
+    console.error('Error fetching equipment by service tag:', error);
     throw error;
   }
 };
 
-// Updates equipment data.
-export const updateEquipment = async (serviceTag, data) => {
-  try {
-    const response = await apiClient.put(`/equipment/by-tag/${serviceTag}`, data);
-    return response.data;
-  } catch (error) {
-    console.error(`Error updating equipment with service tag ${serviceTag}`, error);
-    throw error;
-  }
-};
-
-// This function is new and specifically handles marking equipment as damaged.
-export const markAsDamaged = async (serviceTag, observaciones) => {
-  try {
-    const response = await apiClient.post('/danos', { serviceTag, observaciones });
-    return response.data;
-  } catch (error) {
-    console.error(`Error marking equipment ${serviceTag} as damaged`, error);
-    throw error;
-  }
+/**
+ * Repairs a piece of equipment and moves it to the 'disponibles' table.
+ * @param {string} serviceTag The service tag of the equipment to repair.
+ * @param {string} repair_notes Mandatory notes about the repair.
+ * @returns {Promise<Object>} A promise that resolves to the response from the API.
+ */
+export const repairEquipment = async (serviceTag, repair_notes) => {
+    try {
+        if (!repair_notes) {
+            throw new Error('Repair notes are mandatory.');
+        }
+        const response = await apiClient.post(`/equipment/repair/${serviceTag}`, { repair_notes });
+        return response.data;
+    } catch (error) {
+        console.error('Error repairing equipment:', error);
+        throw error;
+    }
 };
