@@ -119,45 +119,56 @@ const EquipmentDetailsCard = ({ equipment, onDamageReported, onStatusChange }) =
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-border pt-4">
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tipo</p>
-              <p className="text-sm font-medium text-foreground">{equipment.tipo || 'N/A'}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo CPU</p>
-              <p className="text-sm font-medium text-foreground">{equipment.activo_cpu || 'N/A'}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Marca Pantalla</p>
-              <p className="text-sm font-medium text-foreground">{equipment.marca_pantalla || 'N/A'}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Referencia Pantalla</p>
-              <p className="text-sm font-medium text-foreground">{equipment.referencia_pantalla || 'N/A'}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Service Tag Pantalla</p>
-              <p className="text-sm font-medium text-foreground">{equipment.service_tag_pantalla || 'N/A'}</p>
-            </div>
-            <div className="space-y-1">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo Pantalla</p>
-              <p className="text-sm font-medium text-foreground">{equipment.activo_pantalla || 'N/A'}</p>
-            </div>
-
-            {isAssigned && (
-              <>
+          {/* Technical Details */}
+          <div className="border-t border-border pt-4">
+            <h3 className="text-sm font-semibold text-foreground mb-3">Detalles Técnicos</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Nombre del Empleado</p>
-                  <p className="text-sm font-medium text-foreground">{equipment.employeeName || 'N/A'}</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tipo</p>
+                <p className="text-sm font-medium text-foreground">{equipment.tipo || 'N/A'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Fecha de Asignación</p>
-                  <p className="text-sm font-medium text-foreground">{formatDate(equipment.acta)}</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo CPU</p>
+                <p className="text-sm font-medium text-foreground">{equipment.activo_cpu || 'N/A'}</p>
                 </div>
-              </>
-            )}
+                <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Marca Pantalla</p>
+                <p className="text-sm font-medium text-foreground">{equipment.marca_pantalla || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Referencia Pantalla</p>
+                <p className="text-sm font-medium text-foreground">{equipment.referencia_pantalla || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Service Tag Pantalla</p>
+                <p className="text-sm font-medium text-foreground">{equipment.service_tag_pantalla || 'N/A'}</p>
+                </div>
+                <div className="space-y-1">
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo Pantalla</p>
+                <p className="text-sm font-medium text-foreground">{equipment.activo_pantalla || 'N/A'}</p>
+                </div>
+            </div>
           </div>
+
+          {/* Current Assignment Details */}
+          {isAssigned && (
+            <div className="border-t border-border pt-4">
+              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center">
+                  <Icon name="User" size={16} className="mr-2 text-primary" />
+                  Asignación Actual
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Nombre del Empleado</p>
+                      <p className="text-sm font-medium text-foreground">{equipment.employeeName || 'N/A'}</p>
+                  </div>
+                  <div className="space-y-1">
+                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Fecha de Asignación</p>
+                      <p className="text-sm font-medium text-foreground">{formatDate(equipment.assignmentDate)}</p>
+                  </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
