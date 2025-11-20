@@ -6,7 +6,7 @@ import MetricsCard from './components/MetricsCard';
 import EquipmentTable from './components/EquipmentTable';
 import StatusOverview from './components/StatusOverview';
 import { useNavigate } from 'react-router-dom';
-import { getDashboardData } from 'services/dashboardService';
+import { getDashboardData, updateMaintenanceDate } from 'services/dashboardService';
 import Spinner from '../../components/ui/Spinner';
 import ErrorDisplay from '../../components/ui/ErrorDisplay';
 
@@ -37,6 +37,16 @@ const MainDashboard = () => {
     }
   };
 
+  const handleMaintenanceAction = async (item, maintenanceType) => {
+    try {
+      await updateMaintenanceDate(item.serviceTag, maintenanceType);
+      setRefreshKey(prev => prev + 1);
+    } catch (error) {
+      console.error("Failed to update maintenance date:", error);
+      setError('No se pudo actualizar la fecha de mantenimiento.');
+    }
+  };
+
   const handleEquipmentAction = (action, equipment = null) => {
     if (!equipment || !equipment.serviceTag) return; 
 
@@ -49,6 +59,9 @@ const MainDashboard = () => {
         break;
       case 'edit':
         navigate(`/edit-equipment?service_tag=${equipment.serviceTag}`);
+        break;
+      case 'maintenance':
+        handleMaintenanceAction(equipment, equipment.maintenanceType);
         break;
       default:
         break;
@@ -78,7 +91,7 @@ const MainDashboard = () => {
     if (!equipmentData) return [];
     switch (activeTab) {
       case 'pc':
-        return equipmentData.filter(item => item.tipo && item.tipo.toLowerCase() === 'pc');
+        return equipmentData.filter(item => item.tipo && (item.tipo.toLowerCase() === 'pc' || item.tipo.toLowerCase() === 'escritorio'));
       case 'portatil':
         return equipmentData.filter(item => item.tipo && item.tipo.toLowerCase() === 'portatil');
       case 'tablet':
@@ -135,26 +148,31 @@ const MainDashboard = () => {
             />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {equipmentMetrics.map((metric, index) => (
-              <MetricsCard
-                key={index}
-                {...metric}
-                onClick={() => handleMetricClick(metric.title)}
-              />
-            ))}
-          </div>
+          {activeTab === 'todos' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {equipmentMetrics.map((metric, index) => (
+                <MetricsCard
+                  key={index}
+                  {...metric}
+                  onClick={() => handleMetricClick(metric.title)}
+                />
+              ))}
+            </div>
+          )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2">
+            <div className={activeTab === 'asignados' ? "lg:col-span-3" : "lg:col-span-2"}>
               <EquipmentTable 
                 equipmentData={getFilteredEquipmentData()}
                 onEquipmentAction={handleEquipmentAction}
+                activeTab={activeTab}
               />
             </div>
-            <div className="space-y-6">
-              <StatusOverview statusData={statusData} />
-            </div>
+            {activeTab !== 'asignados' && (
+              <div className="space-y-6">
+                <StatusOverview statusData={statusData} />
+              </div>
+            )}
           </div>
         </div>
       </div>

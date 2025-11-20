@@ -17,39 +17,63 @@ const EquipmentHistory = () => {
   const [error, setError] = useState(null);
   const location = useLocation();
 
-  const fetchEquipmentData = useCallback(() => {
-    const searchParams = new URLSearchParams(location.search);
-    const serviceTag = searchParams.get('service_tag');
+  const fetchData = useCallback(() => {
+    const serviceTag = new URLSearchParams(location.search).get('service_tag');
+    const passedDetails = location.state?.equipmentDetails;
 
-    if (serviceTag) {
-      setIsLoading(true);
-      setError(null);
-
-      Promise.all([
-        getEquipmentByServiceTag(serviceTag),
-        getHistoryByServiceTag(serviceTag)
-      ]).then(([equipment, historyResponse]) => {
-        if (equipment) {
-          setSelectedEquipment(equipment);
-        } else {
-          throw new Error('No se pudo encontrar el equipo con el service tag especificado.');
-        }
-        setHistoryEntries(historyResponse?.history || []);
-      }).catch(error => {
-        console.error("Error fetching equipment data or history:", error);
-        setError(error.message || 'Ocurrió un error al cargar los datos del equipo.');
-      }).finally(() => {
-        setIsLoading(false);
-      });
-    } else {
+    if (!serviceTag) {
       setError('No se ha especificado un service tag de equipo en la URL.');
       setIsLoading(false);
+      return;
     }
-  }, [location.search]);
+
+    setIsLoading(true);
+    setError(null);
+
+    const loadData = async () => {
+      let equipmentDetails;
+      // Step 1: Get Equipment Details
+      if (passedDetails) {
+        equipmentDetails = passedDetails;
+        setSelectedEquipment(equipmentDetails);
+      } else {
+        try {
+          equipmentDetails = await getEquipmentByServiceTag(serviceTag);
+          if (equipmentDetails) {
+            setSelectedEquipment(equipmentDetails);
+          } else {
+            throw new Error('No se pudo encontrar el equipo con el service tag especificado.');
+          }
+        } catch (e) {
+          console.error("Error fetching equipment data:", e);
+          const errorMessage = e.response?.status === 500 ? 'Request failed with status code 500' : (e.message || 'Ocurrió un error al cargar los datos del equipo.');
+          setError(errorMessage);
+          setIsLoading(false);
+          return; // Stop if we can't get equipment details
+        }
+      }
+      
+      // Step 2: Get History
+      try {
+        const historyResponse = await getHistoryByServiceTag(serviceTag);
+        setHistoryEntries(historyResponse?.history || []);
+      } catch (historyError) {
+        console.error("Error fetching history:", historyError);
+        // Backend fails on this for assigned items.
+        // We will show the equipment details but the history will be empty.
+        // We avoid setting a page-wide error.
+        setHistoryEntries([]);
+      }
+
+      setIsLoading(false);
+    };
+    
+    loadData();
+  }, [location.search, location.state]);
 
   useEffect(() => {
-    fetchEquipmentData();
-  }, [fetchEquipmentData]);
+    fetchData();
+  }, [fetchData]);
 
   const handleExport = () => {
     console.log('Exporting equipment history report...');
@@ -84,7 +108,7 @@ const EquipmentHistory = () => {
     if (selectedEquipment) {
       return (
         <div className="space-y-6">
-          <EquipmentDetailsCard equipment={selectedEquipment} onDamageReported={fetchEquipmentData} />
+          <EquipmentDetailsCard equipment={selectedEquipment} onDamageReported={fetchData} />
           <HistoryFilters onFiltersChange={() => { }} onExport={handleExport} />
           <HistoryTimeline historyEntries={historyEntries} />
         </div>

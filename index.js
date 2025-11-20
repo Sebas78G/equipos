@@ -233,6 +233,44 @@ app.get('/api/equipment/:type/:id', async (req, res) => {
     }
 });
 
+app.put('/api/equipment/:id/maintenance', async (req, res) => {
+  const { id } = req.params;
+  const { maintenanceType } = req.body;
+
+  const [type, recordId] = id.split('-');
+
+  let tableName;
+  switch (type) {
+    case 'asignacion':
+      tableName = 'asignaciones_pc'; // O determinar la tabla correcta según el tipo de equipo
+      break;
+    default:
+      return res.status(400).json({ msg: 'Invalid equipment type for maintenance' });
+  }
+
+  let dateColumn;
+  let interval;
+  if (maintenanceType === 'preventive') {
+    dateColumn = 'preventive_maintenance_date';
+    interval = '3 months';
+  } else if (maintenanceType === 'physical') {
+    dateColumn = 'physical_maintenance_date';
+    interval = '1 year';
+  } else {
+    return res.status(400).json({ msg: 'Invalid maintenance type' });
+  }
+
+  try {
+    const query = `UPDATE ${tableName} SET ${dateColumn} = NOW() + INTERVAL '${interval}' WHERE id = $1 RETURNING *`;
+    const result = await pool.query(query, [recordId]);
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+
 // GET history by service tag
 app.get('/api/history/by-tag/:serviceTag', async (req, res) => {
   const { serviceTag } = req.params;

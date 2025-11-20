@@ -1,11 +1,15 @@
 import { getDisponibles } from './disponiblesService';
 import { getAsignaciones } from './asignacionesService';
 import { getDanos } from './damageService';
+import apiClient from '../api/apiClient';
 
 const safeToISOString = (dateString) => {
   if (!dateString) return new Date().toISOString();
   const date = new Date(dateString);
-  return isNaN(date) ? new Date().toISOString() : date.toISOString();
+  if (isNaN(date.getTime())) {
+    return new Date().toISOString();
+  }
+  return date.toISOString();
 };
 
 // Transforms the raw data from services into a structured format for the dashboard.
@@ -23,18 +27,37 @@ const transformDataForDashboard = (disponibles, asignaciones, danos) => {
       status: 'Disponible',
       lastUpdated: safeToISOString(equipo.last_update),
     })),
-    ...asignaciones.map(asig => ({
-      ...asig,
-      id: `asignacion-${asig.id}`,
-      type: asig.tipo,
-      brand: asig.marca,
-      model: asig.modelo,
-      serviceTag: asig.service_tag_cpu,
-      employeeName: asig.nombre_funcionario,
-      area: asig.area,
-      status: 'Asignado',
-      lastUpdated: safeToISOString(asig.fecha_asignacion),
-    })),
+    ...asignaciones.map(asig => {
+      const assignmentDate = asig.fecha_asignacion ? new Date(asig.fecha_asignacion) : null;
+      
+      let preventiveMaintenanceISO = null;
+      let physicalMaintenanceISO = null;
+
+      if (assignmentDate && !isNaN(assignmentDate.getTime())) {
+        const preventive = new Date(assignmentDate);
+        preventive.setMonth(preventive.getMonth() + 3);
+        preventiveMaintenanceISO = preventive.toISOString();
+
+        const physical = new Date(assignmentDate);
+        physical.setFullYear(physical.getFullYear() + 1);
+        physicalMaintenanceISO = physical.toISOString();
+      }
+
+      return {
+        ...asig,
+        id: `asignacion-${asig.id}`,
+        type: asig.tipo,
+        brand: asig.marca,
+        model: asig.modelo,
+        serviceTag: asig.service_tag_cpu,
+        employeeName: asig.nombre_funcionario,
+        area: asig.area,
+        status: 'Asignado',
+        lastUpdated: safeToISOString(asig.fecha_asignacion),
+        preventiveMaintenanceDate: asig.preventive_maintenance_date || preventiveMaintenanceISO,
+        physicalMaintenanceDate: asig.physical_maintenance_date || physicalMaintenanceISO,
+      };
+    }),
     ...danos.map(dano => ({
       ...dano,
       id: `dano-${dano.id}`,
@@ -85,6 +108,16 @@ export const getDashboardData = async () => {
     };
   } catch (error) {
     console.error('Error fetching or processing dashboard data:', error);
+    throw error;
+  }
+};
+
+export const updateMaintenanceDate = async (id, maintenanceType) => {
+  try {
+    const response = await apiClient.put(`/equipment/${id}/maintenance`, { maintenanceType });
+    return response.data;
+  } catch (error) {
+    console.error(`Error updating ${maintenanceType} maintenance date:`, error);
     throw error;
   }
 };

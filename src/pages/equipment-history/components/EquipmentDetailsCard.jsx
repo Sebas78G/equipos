@@ -4,6 +4,7 @@ import Icon from '../../../components/AppIcon';
 import resolveEquipmentImage from '../../../utils/imageResolver';
 import Button from '../../../components/ui/Button';
 import { reportDamageByServiceTag } from '../../../services/damageService';
+import { updateEquipment } from '../../../services/equipmentService';
 
 // Helper to format date if it exists
 const formatDate = (dateString) => {
@@ -21,36 +22,28 @@ const formatDate = (dateString) => {
   }
 };
 
-const EquipmentDetailsCard = ({ equipment, onDamageReported }) => {
+const EquipmentDetailsCard = ({ equipment, onDamageReported, onStatusChange }) => {
   const navigate = useNavigate();
-  // equipment can be null or empty, so we need to guard against that
+  
   if (!equipment || Object.keys(equipment).length === 0) {
-    // Or render a loading state/placeholder
     return <div className="bg-card border border-border rounded-lg shadow-card p-6 text-center">Cargando detalles del equipo...</div>;
   }
   
   const imagePath = resolveEquipmentImage(equipment.referencia_cpu);
 
-  // Deriving status from the source table provided by the backend
-  const getStatusInfo = (sourceTable) => {
-    switch (sourceTable) {
-      case 'asignaciones_pc':
-      case 'asignaciones_portatiles':
-      case 'asignaciones_tablets':
-        return { text: 'Asignado', color: 'bg-primary text-primary-foreground' };
-      case 'disponibles':
-        return { text: 'Disponible', color: 'bg-success text-success-foreground' };
-      case 'danos':
-        return { text: 'Dañado', color: 'bg-error text-error-foreground' };
-      case 'renuncia':
-        return { text: 'En proceso de renuncia', color: 'bg-warning text-warning-foreground' };
-      default:
-        return { text: 'Desconocido', color: 'bg-muted text-muted-foreground' };
-    }
+  const getStatusInfo = (status) => {
+    const statusConfig = {
+      'Asignado': { text: 'Asignado', color: 'bg-primary text-primary-foreground' },
+      'Disponible': { text: 'Disponible', color: 'bg-success text-success-foreground' },
+      'Dañado': { text: 'Dañado', color: 'bg-error text-error-foreground' },
+      'En proceso de renuncia': { text: 'En proceso de renuncia', color: 'bg-warning text-warning-foreground' },
+      default: { text: 'Desconocido', color: 'bg-muted text-muted-foreground' }
+    };
+    return statusConfig[status] || statusConfig.default;
   };
 
-  const statusInfo = getStatusInfo(equipment.source_table);
-  const isAssigned = equipment.source_table?.startsWith('asignaciones');
+  const statusInfo = getStatusInfo(equipment.status);
+  const isAssigned = equipment.status === 'Asignado';
   
   const getTypeIcon = (type) => {
     const lowerType = type?.toLowerCase() || '';
@@ -62,22 +55,31 @@ const EquipmentDetailsCard = ({ equipment, onDamageReported }) => {
 
   const handleReportDamage = async () => {
     try {
-      await reportDamageByServiceTag(equipment.service_tag_cpu);
+      await reportDamageByServiceTag(equipment.serviceTag);
       if(onDamageReported) onDamageReported();
     } catch (error) {
       console.error('Failed to report damage', error);
-      // Optionally, show an error message to the user
     }
   };
 
-  const handleReassign = () => {
-    navigate(`/equipment-assignment?service_tag=${equipment.service_tag_cpu}`);
+  const handleAssignAction = () => {
+    if (isAssigned) {
+      const confirmation = window.confirm("¿Estás seguro de que quieres marcar este equipo como disponible?");
+      if (confirmation) {
+        updateEquipment(equipment.serviceTag, { status: 'disponible' })
+          .then(() => {
+            if (onStatusChange) onStatusChange();
+          })
+          .catch(error => console.error('Failed to update status', error));
+      }
+    } else {
+      navigate(`/equipment-assignment?service_tag=${equipment.serviceTag}`);
+    }
   };
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-card p-6">
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Equipment Image - Placeholder */}
         <div className="flex-shrink-0">
         {imagePath ? (
             <img src={imagePath} alt={`Imagen de ${equipment.referencia_cpu}`} className="w-48 h-32 object-contain rounded-lg" />
@@ -88,7 +90,6 @@ const EquipmentDetailsCard = ({ equipment, onDamageReported }) => {
           )}
         </div>
 
-        {/* Equipment Information */}
         <div className="flex-1 space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
@@ -97,92 +98,66 @@ const EquipmentDetailsCard = ({ equipment, onDamageReported }) => {
                   <Icon name={getTypeIcon(equipment.tipo)} size={20} className="text-accent" />
                 </div>
                 <div>
-                  {/* Using 'marca_cpu' and 'referencia_cpu' */}
                   <h2 className="text-xl font-semibold text-foreground">{equipment.marca_cpu} {equipment.referencia_cpu}</h2>
-                  {/* Using 'service_tag_cpu' */}
-                  <p className="text-sm text-muted-foreground">Service Tag: {equipment.service_tag_cpu}</p>
+                  <p className="text-sm text-muted-foreground">Service Tag: {equipment.serviceTag}</p>
                 </div>
               </div>
             </div>
             
             <div className="flex flex-col sm:items-end space-y-2">
-            <div className='flex items-center space-x-2'>
-            <Button variant="outline" size="sm" onClick={handleReportDamage}><Icon name="ShieldAlert" className="mr-2 h-4 w-4" />Reportar Daño</Button>
-            <Button size="sm" onClick={handleReassign}><Icon name="UserPlus" className="mr-2 h-4 w-4" />Asignar</Button>
-            </div>
+              <div className='flex items-center space-x-2'>
+                <Button variant="outline" size="sm" onClick={handleReportDamage}><Icon name="ShieldAlert" className="mr-2 h-4 w-4" />Reportar Daño</Button>
+                <Button size="sm" onClick={handleAssignAction}>
+                  {isAssigned ? <Icon name="CheckCircle" className="mr-2 h-4 w-4" /> : <Icon name="UserPlus" className="mr-2 h-4 w-4" />}
+                  {isAssigned ? 'Pasar a Disponible' : 'Asignar'}
+                </Button>
+              </div>
               <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                 {statusInfo.text}
               </span>
-              {/* Using 'acta' for last updated date */}
-              <p className="text-xs text-muted-foreground">Última actualización: {formatDate(equipment.acta)}</p>
+              <p className="text-xs text-muted-foreground">Última actualización: {formatDate(equipment.lastUpdated)}</p>
             </div>
           </div>
 
-          {/* Specifications Grid - Using fields that exist in the database */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 border-t border-border pt-4">
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Tipo</p>
-              {/* Using 'tipo' */}
               <p className="text-sm font-medium text-foreground">{equipment.tipo || 'N/A'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo CPU</p>
-               {/* Using 'activo_cpu' */}
               <p className="text-sm font-medium text-foreground">{equipment.activo_cpu || 'N/A'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Marca Pantalla</p>
-              {/* Using 'marca_pantalla' */}
               <p className="text-sm font-medium text-foreground">{equipment.marca_pantalla || 'N/A'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Referencia Pantalla</p>
-              {/* Using 'referencia_pantalla' */}
               <p className="text-sm font-medium text-foreground">{equipment.referencia_pantalla || 'N/A'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Service Tag Pantalla</p>
-              {/* Using 'service_tag_pantalla' */}
               <p className="text-sm font-medium text-foreground">{equipment.service_tag_pantalla || 'N/A'}</p>
             </div>
             <div className="space-y-1">
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Activo Pantalla</p>
-              {/* Using 'activo_pantalla' */}
               <p className="text-sm font-medium text-foreground">{equipment.activo_pantalla || 'N/A'}</p>
             </div>
-          </div>
 
-          {/* Current Assignment - Display only if assigned */}
-          {isAssigned && (
-            <div className="bg-muted/50 rounded-lg p-4 mt-4">
-              <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center">
-                <Icon name="User" size={16} className="mr-2" />
-                Asignación Actual
-              </h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {isAssigned && (
+              <>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Empleado</p>
-                  {/* Using 'nombre_funcionario' */}
-                  <p className="text-sm font-medium text-foreground">{equipment.nombre_funcionario || 'N/A'}</p>
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Nombre del Empleado</p>
+                  <p className="text-sm font-medium text-foreground">{equipment.employeeName || 'N/A'}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Área</p>
-                  {/* Using 'area' */}
-                  <p className="text-sm font-medium text-foreground">{equipment.area || 'N/A'}</p>
-                </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Fecha de Asignación</p>
-                   {/* Using 'acta' */}
+                  <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Fecha de Asignación</p>
                   <p className="text-sm font-medium text-foreground">{formatDate(equipment.acta)}</p>
                 </div>
-                <div className="space-y-1">
-                  <p className="text-xs font-medium text-muted-foreground">Correo</p>
-                  {/* Using 'correo' */}
-                  <p className="text-sm font-medium text-foreground">{equipment.correo || 'N/A'}</p>
-                </div>
-              </div>
-            </div>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

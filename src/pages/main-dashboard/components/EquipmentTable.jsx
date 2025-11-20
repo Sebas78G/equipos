@@ -4,15 +4,17 @@ import Button from 'components/ui/Button';
 import Input from 'components/ui/Input';
 import { useNavigate } from 'react-router-dom';
 
-const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
+const EquipmentTable = ({ equipmentData, onEquipmentAction, activeTab }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: 'lastUpdated', direction: 'desc' });
   const navigate = useNavigate();
 
-  // This is the corrected function that now uses the unique service_tag.
   const handleViewDetails = (item) => {
-    // All navigation to the history page should be based on the unique service tag (CPU).
-    navigate(`/equipment-history?service_tag=${item.serviceTag}`);
+    navigate(`/equipment-history?service_tag=${item.serviceTag}`, { state: { equipmentDetails: item } });
+  };
+
+  const handleMaintenance = (item, maintenanceType) => {
+    onEquipmentAction('maintenance', { ...item, maintenanceType });
   };
 
   const getStatusBadge = (status) => {
@@ -34,17 +36,18 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
 
   const getEquipmentIcon = (type) => {
     const icons = {
-      'PC': 'Monitor',
-      'Portátil': 'Laptop',
-      'Tablet': 'Tablet'
+        'PC': 'Monitor',
+        'Escritorio': 'Monitor',
+        'Portátil': 'Laptop',
+        'Tablet': 'Tablet'
     };
-    return icons?.[type] || 'Monitor';
+    return icons[type] || 'Monitor';
   };
 
   const filteredData = equipmentData
     ? equipmentData.filter(item => {
         if (!searchTerm) {
-          return true; // Show all items if search term is empty
+          return true;
         }
         const term = searchTerm.toLowerCase();
         const serviceTag = item.serviceTag?.toLowerCase() || '';
@@ -63,7 +66,7 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
         if (sortConfig.key === 'lastUpdated') {
             const dateA = aValue ? new Date(aValue).getTime() : 0;
             const dateB = bValue ? new Date(bValue).getTime() : 0;
-            return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+            return sortConfig.direction === 'asc' ? dateA - dateB : dateB - a;
         }
 
         if (sortConfig.direction === 'asc') {
@@ -91,10 +94,11 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
         day: '2-digit',
         month: '2-digit',
         year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
     });
   };
+  
+  const showMaintenanceColumns = activeTab === 'asignados';
+  const showStatusColumn = activeTab !== 'asignados';
 
   return (
     <div className="bg-card border border-border rounded-lg shadow-card">
@@ -109,7 +113,7 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
             <div className="relative">
               <Input
                 type="search"
-                placeholder="Buscar por service tag, empleado..."
+                placeholder="Buscar por service tag, emp..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e?.target?.value)}
                 className="pl-10 w-64"
@@ -135,49 +139,44 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
         <table className="w-full">
           <thead className="bg-muted/50">
             <tr>
-              <th className="px-6 py-3 text-left w-2/12">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort('type')}
-                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground"
-                >
+              <th className="px-6 py-3 text-left w-auto">
+                <Button variant="ghost" size="sm" onClick={() => handleSort('type')} className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground">
                   <span>Equipo</span>
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
-              <th className="px-6 py-3 text-center w-2/12">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort('serviceTag')}
-                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center"
-                >
+              <th className="px-6 py-3 text-center w-auto">
+                <Button variant="ghost" size="sm" onClick={() => handleSort('serviceTag')} className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center">
                   <span>Service Tag</span>
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
-              <th className="px-6 py-3 text-center w-2/12">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort('employeeName')}
-                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center"
-                >
+              <th className="px-6 py-3 text-center w-auto">
+                <Button variant="ghost" size="sm" onClick={() => handleSort('employeeName')} className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center">
                   <span>Empleado</span>
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
-              <th className="px-6 py-3 text-center w-2/12">
-                <span className="font-medium text-muted-foreground">Estado</span>
-              </th>
-              <th className="px-6 py-3 text-center w-4/12">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => handleSort('lastUpdated')}
-                  className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center"
-                >
+              
+              {showStatusColumn && (
+                  <th className="px-6 py-3 text-center w-auto">
+                      <span className="font-medium text-muted-foreground">Estado</span>
+                  </th>
+              )}
+
+              {showMaintenanceColumns && (
+                <>
+                  <th className="px-6 py-3 text-center w-auto">
+                    <span className="font-medium text-muted-foreground">Mantenimiento Preventivo</span>
+                  </th>
+                  <th className="px-6 py-3 text-center w-auto">
+                    <span className="font-medium text-muted-foreground">Mantenimiento Físico</span>
+                  </th>
+                </>
+              )}
+
+              <th className="px-6 py-3 text-center w-auto">
+                <Button variant="ghost" size="sm" onClick={() => handleSort('lastUpdated')} className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center">
                   <span>Última Actualización</span>
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
@@ -186,8 +185,8 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
           </thead>
           <tbody className="divide-y divide-border">
             {sortedData?.map((item) => (
-              <tr key={`${item.id}-${item.serviceTag}`} className="hover:bg-muted transition-colors cursor-pointer" onClick={() => handleViewDetails(item)}>
-                <td className="px-6 py-4">
+              <tr key={`${item.id}-${item.serviceTag}`} className="hover:bg-muted transition-colors cursor-pointer" >
+                <td className="px-6 py-4" onClick={() => handleViewDetails(item)}>
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-accent/10 rounded-lg flex items-center justify-center">
                       <Icon name={getEquipmentIcon(item?.type)} size={16} className="text-accent" />
@@ -198,19 +197,44 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction }) => {
                     </div>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-6 py-4 text-center" onClick={() => handleViewDetails(item)}>
                   <code className="px-2 py-1 bg-muted rounded text-sm font-mono">{item?.serviceTag}</code>
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-6 py-4 text-center" onClick={() => handleViewDetails(item)}>
                   <div>
                     <p className="font-medium text-foreground">{item?.employeeName || 'N/A'}</p>
                     <p className="text-xs text-muted-foreground">{item?.area}</p>
                   </div>
                 </td>
-                <td className="px-6 py-4 text-center">
-                  {getStatusBadge(item?.status)}
-                </td>
-                <td className="px-6 py-4 text-center">
+
+                {showStatusColumn && (
+                    <td className="px-6 py-4 text-center" onClick={() => handleViewDetails(item)}>
+                        {getStatusBadge(item?.status)}
+                    </td>
+                )}
+
+                {showMaintenanceColumns && (
+                  <>
+                    <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center space-x-2">
+                        <span className="text-sm text-foreground whitespace-nowrap">
+                            {formatDate(item.preventiveMaintenanceDate)}
+                        </span>
+                        <Button size="sm" onClick={() => handleMaintenance(item, 'preventive')}>Hecho</Button>
+                        </div>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                        <div className="flex items-center justify-center space-x-2">
+                        <span className="text-sm text-foreground whitespace-nowrap">
+                            {formatDate(item.physicalMaintenanceDate)}
+                        </span>
+                        <Button size="sm" onClick={() => handleMaintenance(item, 'physical')}>Hecho</Button>
+                        </div>
+                    </td>
+                  </>
+                )}
+
+                <td className="px-6 py-4 text-center" onClick={() => handleViewDetails(item)}>
                   <p className="text-sm text-foreground whitespace-nowrap">{formatDate(item?.lastUpdated)}</p>
                 </td>
               </tr>
