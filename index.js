@@ -445,3 +445,224 @@ app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
 
+
+app.get('/api/equipment/acta/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+
+    if (!serviceTag) {
+        return res.status(400).json({ msg: 'Service tag is required' });
+    }
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets'];
+        let equipment = null;
+        let sourceTable = null;
+
+        // Buscar el equipo en todas las tablas
+        for (const table of tables) {
+            const result = await pool.query(
+                `SELECT * FROM ${table} WHERE service_tag_cpu = $1`, 
+                [serviceTag]
+            );
+            if (result.rows.length > 0) {
+                equipment = result.rows[0];
+                sourceTable = table;
+                break;
+            }
+        }
+
+        if (!equipment) {
+            return res.status(404).json({ msg: `Equipment with service tag ${serviceTag} not found` });
+        }
+
+        // Verificar que existe el acta y es un Buffer
+        if (!equipment.acta) {
+            return res.status(404).json({ msg: 'No PDF found for this equipment' });
+        }
+
+        // Si el acta es un Buffer, enviarlo como PDF
+        if (Buffer.isBuffer(equipment.acta)) {
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `attachment; filename="acta_${serviceTag}.pdf"`);
+            res.send(equipment.acta);
+        } else {
+            // Si no es un Buffer, intentar parsearlo o devolver error
+            console.error('Acta is not a Buffer:', typeof equipment.acta);
+            res.status(500).json({ msg: 'PDF format is invalid' });
+        }
+
+    } catch (err) {
+        console.error("Error fetching PDF by service tag:", err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// ============================
+// MEJORA AL ENDPOINT EXISTENTE
+// ============================
+
+// Mejorar el endpoint GET /api/equipment/by-tag/:serviceTag
+// Reemplazar el existente con esta versión mejorada
+
+app.get('/api/equipment/by-tag/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+    const { includeActa } = req.query; // Parámetro opcional para incluir o no el acta
+
+    if (!serviceTag) {
+        return res.status(400).json({ msg: 'Service tag is required' });
+    }
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles'];
+        let equipment = null;
+
+        for (const table of tables) {
+            const result = await pool.query(`SELECT * FROM ${table} WHERE service_tag_cpu = $1`, [serviceTag]);
+            if (result.rows.length > 0) {
+                equipment = result.rows[0];
+                equipment.source_table = table;
+                
+                // Si no se requiere el acta completo, solo enviar metadata
+                if (equipment.acta && !includeActa) {
+                    equipment.actaMetadata = {
+                        exists: true,
+                        type: Buffer.isBuffer(equipment.acta) ? 'pdf' : typeof equipment.acta,
+                        size: Buffer.isBuffer(equipment.acta) ? equipment.acta.length : 0
+                    };
+                    // No enviar el Buffer completo a menos que se solicite explícitamente
+                    delete equipment.acta;
+                }
+                
+                break;
+            }
+        }
+
+        if (equipment) {
+            res.json(equipment);
+        } else {
+            res.status(404).json({ msg: `Equipment with service tag ${serviceTag} not found in any table` });
+        }
+    } catch (err) {
+        console.error("Error fetching equipment by service tag:", err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+// ============================
+// UTILIDAD PARA DEBUGGING
+// ============================
+
+// Endpoint para verificar el formato del acta (solo para desarrollo/debugging)
+app.get('/api/debug/acta/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets'];
+        
+        for (const table of tables) {
+            const result = await pool.query(
+                `SELECT service_tag_cpu, acta FROM ${table} WHERE service_tag_cpu = $1`, 
+                [serviceTag]
+            );
+            
+            if (result.rows.length > 0) {
+                const equipment = result.rows[0];
+                
+                const info = {
+                    serviceTag: equipment.service_tag_cpu,
+                    actaExists: !!equipment.acta,
+                    actaType: typeof equipment.acta,
+                    isBuffer: Buffer.isBuffer(equipment.acta),
+                    size: Buffer.isBuffer(equipment.acta) ? equipment.acta.length : 0,
+                    firstBytes: Buffer.isBuffer(equipment.acta) 
+                        ? Array.from(equipment.acta.slice(0, 10))
+                        : null,
+                    isPDF: Buffer.isBuffer(equipment.acta) 
+                        ? equipment.acta.slice(0, 4).toString() === '%PDF'
+                        : false
+                };
+                
+                return res.json(info);
+            }
+        }
+        
+        res.status(404).json({ msg: 'Equipment not found' });
+    } catch (err) {
+        console.error("Error in debug endpoint:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+
+// Route to move an item from 'disponibles' to 'danos'
+app.post('/api/equipment/:id/mark-damaged', async (req, res) => {
+  const { id } = req.params;
+
+  // Make sure the ID is a valid number
+  if (isNaN(id)) {
+    return res.status(400).json({ error: 'ID de equipo inválido.' });
+  }
+
+  const client = await pool.connect();
+
+  try {
+    // Start a transaction
+    await client.query('BEGIN');
+
+    // 1. Find the equipment in the 'disponibles' table
+    const findQuery = 'SELECT * FROM disponibles WHERE id = $1';
+    const findResult = await client.query(findQuery, [id]);
+    const equipment = findResult.rows[0];
+
+    if (!equipment) {
+      // If not found, rollback and send an error
+      await client.query('ROLLBACK');
+      return res.status(404).json({ error: 'Equipo no encontrado en la tabla de disponibles.' });
+    }
+
+    // 2. Insert the equipment data into the 'danos' table
+    // IMPORTANT: Make sure the columns in your 'danos' table match these fields.
+    // Add or remove fields as necessary. I'm assuming they are the same.
+    const insertQuery = `
+      INSERT INTO danos (
+        tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
+        marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla,
+        estado_equipo, acta, base, guaya, mouse, teclado, cargador, cable_red, cable_poder,
+        adaptador_pantalla, adaptador_red, adaptador_multipuertos, antena_wireless,
+        base_adicional, cable_poder_adicional, guaya_adicional, pantalla_adicional
+      ) VALUES (
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
+        $19, $20, $21, $22, $23, $24, $25, $26
+      )
+    `;
+    const values = [
+      equipment.tipo, equipment.marca_cpu, equipment.referencia_cpu, equipment.service_tag_cpu, equipment.activo_cpu,
+      equipment.marca_pantalla, equipment.referencia_pantalla, equipment.service_tag_pantalla, equipment.activo_pantalla,
+      'Dañado', // estado_equipo
+      new Date(), // acta (sets current date)
+      equipment.base, equipment.guaya, equipment.mouse, equipment.teclado, equipment.cargador, equipment.cable_red, equipment.cable_poder,
+      equipment.adaptador_pantalla, equipment.adaptador_red, equipment.adaptador_multipuertos, equipment.antena_wireless,
+      equipment.base_adicional, equipment.cable_poder_adicional, equipment.guaya_adicional, equipment.pantalla_adicional
+    ];
+    await client.query(insertQuery, values);
+
+    // 3. Delete the equipment from the 'disponibles' table
+    const deleteQuery = 'DELETE FROM disponibles WHERE id = $1';
+    await client.query(deleteQuery, [id]);
+
+    // 4. Commit the transaction
+    await client.query('COMMIT');
+
+    res.status(200).json({ message: 'Equipo movido a la tabla de dañados exitosamente.' });
+
+  } catch (error) {
+    // If any error occurs, rollback the transaction
+    await client.query('ROLLBACK');
+    console.error('Error al mover el equipo a dañados:', error);
+    res.status(500).json({ error: 'Error interno del servidor al procesar la solicitud.' });
+  } finally {
+    // Release the client back to the pool
+    client.release();
+  }
+});
+
