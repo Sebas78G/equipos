@@ -6,7 +6,7 @@ import MainNavigation from '../../components/ui/MainNavigation';
 import WorkflowBreadcrumbs from '../../components/ui/WorkflowBreadcrumbs';
 import Button from '../../components/ui/Button';
 import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+
 import { Checkbox } from '../../components/ui/Checkbox';
 import Spinner from '../../components/ui/Spinner';
 
