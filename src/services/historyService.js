@@ -26,5 +26,18 @@ export const getHistoryByServiceTag = async (serviceTag) => {
   }
 };
 
+export const getHojaDeVidaByServiceTag = async (serviceTag) => {
+    try {
+      const response = await apiClient.get(`/equipment/hoja-de-vida/${serviceTag}`,
+      {
+        responseType: 'arraybuffer',
+      });
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching hoja de vida for equipment with service tag ${serviceTag}`, error);
+      throw error;
+    }
+  };
+
 // Note: The function 'getHistoryByEquipmentId' has been removed to avoid confusion 
 // and align with the new service_tag based architecture.

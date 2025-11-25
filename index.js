@@ -2,12 +2,14 @@
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
+const testRoutes = require('./test-route'); // Import the new routes
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use('/api', testRoutes); // Use the new routes
 
 // ============================
 // ENDPOINTS PARA DISPONIBLES
@@ -441,10 +443,6 @@ app.post('/api/equipment/repair/:serviceTag', async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
 // Route to move an item from 'disponibles' to 'danos'
 app.post('/api/equipment/:id/mark-damaged', async (req, res) => {
   const { id } = req.params;
@@ -517,3 +515,47 @@ app.post('/api/equipment/:id/mark-damaged', async (req, res) => {
   }
 });
 
+// =======================================================================
+// FINAL, CORRECT ROUTE FOR HOJA DE VIDA
+// =======================================================================
+app.get('/equipment/hoja-de-vida/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+    if (!serviceTag) {
+        return res.status(400).json({ msg: 'Service tag is required' });
+    }
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles', 'danos'];
+        let equipment = null;
+
+        for (const table of tables) {
+            // Query for the hoja_vida column specifically
+            const result = await pool.query(`SELECT hoja_vida FROM ${table} WHERE service_tag_cpu = $1`, [serviceTag]);
+            if (result.rows.length > 0 && result.rows[0].hoja_vida) {
+                equipment = result.rows[0];
+                break;
+            }
+        }
+
+        if (equipment && equipment.hoja_vida) {
+            // The 'hoja_vida' column is type bytea, which the pg driver converts to a Buffer
+            const excelData = equipment.hoja_vida;
+
+            // Set headers to tell the browser it is an Excel file and to display it inline
+            res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+            res.setHeader('Content-Disposition', 'inline'); // Important: tells browser to display, not download
+
+            // Send the buffer directly
+            res.send(excelData);
+        } else {
+            res.status(404).send('Hoja de Vida not found for this equipment.');
+        }
+    } catch (err) {
+        console.error('Error fetching Hoja de Vida:', err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});

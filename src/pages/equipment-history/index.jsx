@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import MainNavigation from 'components/ui/MainNavigation';
@@ -5,17 +6,20 @@ import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import EquipmentDetailsCard from './components/EquipmentDetailsCard';
 import Icon from 'components/AppIcon';
 import Button from 'components/ui/Button';
-import { getEquipmentByServiceTag } from '../../services/equipmentService';
+import { getEquipmentByServiceTag } from 'services/equipmentService';
+import ExcelViewer from './components/ExcelViewer'; // Import the new component
 
 const EquipmentHistory = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isViewerOpen, setIsViewerOpen] = useState(false); // State for viewer visibility
   const location = useLocation();
   const navigate = useNavigate();
 
+  const serviceTag = new URLSearchParams(location.search).get('service_tag');
+
   const fetchEquipmentData = useCallback(() => {
-    const serviceTag = new URLSearchParams(location.search).get('service_tag');
     const passedDetails = location.state?.equipmentDetails;
 
     if (!serviceTag) {
@@ -27,30 +31,25 @@ const EquipmentHistory = () => {
     setIsLoading(true);
     setError(null);
 
-    const loadData = async () => {
-      if (passedDetails) {
-        setSelectedEquipment(passedDetails);
-        setIsLoading(false);
-      } else {
-        try {
-          const equipmentDetails = await getEquipmentByServiceTag(serviceTag);
-          if (equipmentDetails) {
-            setSelectedEquipment(equipmentDetails);
+    if (passedDetails) {
+      setSelectedEquipment(passedDetails);
+      setIsLoading(false);
+    } else {
+      getEquipmentByServiceTag(serviceTag)
+        .then(details => {
+          if (details) {
+            setSelectedEquipment(details);
           } else {
             throw new Error('No se pudo encontrar el equipo con el service tag especificado.');
           }
-        } catch (e) {
+        })
+        .catch(e => {
           console.error("Error fetching equipment data:", e);
-          const errorMessage = e.response?.status === 500 ? 'Request failed with status code 500' : (e.message || 'Ocurrió un error al cargar los datos del equipo.');
-          setError(errorMessage);
-        } finally {
-          setIsLoading(false);
-        }
-      }
-    };
-    
-    loadData();
-  }, [location.search, location.state]);
+          setError(e.message || 'Ocurrió un error al cargar los datos del equipo.');
+        })
+        .finally(() => setIsLoading(false));
+    }
+  }, [serviceTag, location.state]);
 
   useEffect(() => {
     fetchEquipmentData();
@@ -62,9 +61,10 @@ const EquipmentHistory = () => {
     }
   };
 
+  // Updated handler to open the modal viewer
   const handleViewHojaDeVida = () => {
-    if (selectedEquipment) {
-      navigate('/document-generation', { state: { equipment: selectedEquipment, documentType: 'hojaDeVida' } });
+    if (serviceTag) {
+      setIsViewerOpen(true);
     }
   };
 
@@ -72,10 +72,8 @@ const EquipmentHistory = () => {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-12">
-          <div className="text-center">
             <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
             <p className="text-muted-foreground">Cargando información del equipo...</p>
-          </div>
         </div>
       );
     }
@@ -83,39 +81,29 @@ const EquipmentHistory = () => {
     if (error) {
       return (
         <div className="text-center py-12">
-          <div className="w-16 h-16 bg-error/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Icon name="AlertTriangle" size={24} className="text-error" />
-          </div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">{error}</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            Por favor, verifique que la URL contenga el parámetro 'service_tag' correcto.
-          </p>
+            <Icon name="AlertTriangle" size={24} className="text-error mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">{error}</h3>
         </div>
       );
     }
 
     if (selectedEquipment) {
       return (
-        <div className="space-y-6">
-          <EquipmentDetailsCard 
+        <EquipmentDetailsCard 
             equipment={selectedEquipment} 
             onDamageReported={fetchEquipmentData}
             onStatusChange={fetchEquipmentData} 
-          />
-        </div>
+        />
       );
     }
-
     return null;
   };
 
   return (
     <div className="min-h-screen bg-background">
       <MainNavigation />
-
       <div className="pt-16">
         <WorkflowBreadcrumbs showBack={true} />
-
         <div className="container mx-auto px-4 py-6 max-w-7xl">
           <div className="mb-6">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
@@ -139,12 +127,19 @@ const EquipmentHistory = () => {
               )}
             </div>
           </div>
-
           {renderContent()}
-
         </div>
       </div>
-    </div>);
+      
+      {/* Render the viewer component as a modal */}
+      {isViewerOpen && (
+        <ExcelViewer 
+          serviceTag={serviceTag} 
+          onClose={() => setIsViewerOpen(false)} 
+        />
+      )}
+    </div>
+  );
 };
 
 export default EquipmentHistory;
