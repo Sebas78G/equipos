@@ -1,24 +1,3 @@
-SELECT * FROM public.asignaciones_pc
-ORDER BY id ASC 
-INSERT INTO disponibles (
-    tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
-    marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla
-) VALUES
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '8X9BBZ2', '201911758', 'DELL', 'PANTALLA DELL', 'BVHD7L3', '14744'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3000', 'BLM00R3', '13802', 'DELL', 'PANTALLA DELL', '80SWBX2', '201910038'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '9TJ3BZ2', '201901485', 'DELL', 'PANTALLA DELL', 'HMV9RX2', '201912133'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '8TX8BZ2', '201905829', 'DELL', 'PANTALLA DELL', 'CMY9RX2', '201907078'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '96XV9Z2', '201902448', 'DELL', 'PANTALLA DELL', 'FLZ9RX2', '201910404'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '95NT9Z2', '201903098', 'DELL', 'PANTALLA DELL', 'B8PCRX2', '201901698'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3080', 'GNTQGH3', '13336', 'DELL', 'PANTALLA DELL', '29TCCX2', '201905520'),
- 
--- Crear la base de datos
-CREATE DATABASE equipos;
- 
- 
--- ============================
--- TABLA: DISPONIBLES
--- ============================
 CREATE TABLE disponibles (
     id SERIAL PRIMARY KEY,
     tipo VARCHAR(50),
@@ -45,13 +24,11 @@ CREATE TABLE disponibles (
     cable_poder_adicional BOOLEAN,
     guaya_adicional BOOLEAN,
     pantalla_adicional BOOLEAN,
-    hoja_vida BYTEA               -- Excel en binario
+    sucursal VARCHAR (100),
+	implant VARCHAR (100)
 );
- 
--- ============================
--- TABLA: ASIGNACIONES_PC
--- ============================
-CREATE TABLE asignaciones_pc (
+
+CREATE TABLE pc_calle72(
     id SERIAL PRIMARY KEY,
     tipo VARCHAR(50),
     marca_cpu VARCHAR(100),
@@ -62,18 +39,15 @@ CREATE TABLE asignaciones_pc (
     referencia_pantalla VARCHAR(100),
     service_tag_pantalla VARCHAR(100),
     activo_pantalla VARCHAR(100),
-    acta BYTEA,                   -- PDF
     nombre_funcionario VARCHAR(150),
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    hoja_vida BYTEA               -- Excel
+    sucursal VARCHAR (100),
+	implant VARCHAR (100)
+    
 );
- 
--- ============================
--- TABLA: ASIGNACIONES_PORTATILES
--- ============================
-CREATE TABLE asignaciones_portatiles (
+CREATE TABLE portatil_calle72(
     id SERIAL PRIMARY KEY,
     tipo VARCHAR(50),
     marca_cpu VARCHAR(100),
@@ -84,36 +58,15 @@ CREATE TABLE asignaciones_portatiles (
     referencia_pantalla VARCHAR(100),
     service_tag_pantalla VARCHAR(100),
     activo_pantalla VARCHAR(100),
-    acta BYTEA,                   -- PDF
     nombre_funcionario VARCHAR(150),
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    hoja_vida BYTEA               -- Excel
+    sucursal VARCHAR (100),
+	implant VARCHAR (100)
+    
 );
- 
--- ============================
--- TABLA: ASIGNACIONES_TABLETS
--- ============================
-CREATE TABLE asignaciones_tablets (
-    id SERIAL PRIMARY KEY,
-    tipo VARCHAR(50),
-    marca_cpu VARCHAR(100),
-    referencia_cpu VARCHAR(100),
-    service_tag_cpu VARCHAR(100),
-    activo_cpu VARCHAR(100),
-    acta BYTEA,                   -- PDF
-    nombre_funcionario VARCHAR(150),
-    correo VARCHAR(150),
-    area VARCHAR(100),
-    jefe_inmediato VARCHAR(150),
-    hoja_vida BYTEA               -- Excel
-);
- 
--- ============================
--- TABLA: RENUNCIA
--- ============================
-CREATE TABLE renuncia (
+CREATE TABLE tablet_calle72(
     id SERIAL PRIMARY KEY,
     tipo VARCHAR(50),
     marca_cpu VARCHAR(100),
@@ -124,17 +77,682 @@ CREATE TABLE renuncia (
     referencia_pantalla VARCHAR(100),
     service_tag_pantalla VARCHAR(100),
     activo_pantalla VARCHAR(100),
-    acta BYTEA,                   -- PDF
     nombre_funcionario VARCHAR(150),
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    hoja_vida BYTEA               -- Excel
+    sucursal VARCHAR (100),
+	implant VARCHAR (100)
+	   
 );
- 
--- ============================
--- TABLA: DAÑOS
--- ============================
+
+CREATE TABLE pc_barranquilla(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE portatil_barranquilla(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE tablet_barranquilla(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_cali(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE portatil_cali(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE tablet_cali(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_cartagena(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE portatil_cartagena(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE tablet_cartagena(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_floresta(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE portatil_floresta(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE tablet_floresta(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_kennedy(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE portatil_kennedy(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE tablet_kennedy(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_medellin(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE portatil_medellin(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE tablet_medellin(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_aeropuerto(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE portatil_aeropuerto(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE tablet_aeropuerto(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_american_express(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE portatil_american_express(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE tablet_american_express(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_boston_consulting(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE portatil_boston_consulting(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE tablet_boston_consulting(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_popayan(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE portatil_popayan(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE tablet_popayan(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE pc_emergencia(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+CREATE TABLE portatil_emergencia(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE tablet_emergencia(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    sucursal VARCHAR (100)
+    
+);
+
+CREATE TABLE pc_implant(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    implant VARCHAR (100)
+    
+);
+CREATE TABLE portatil_implant(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    implant VARCHAR (100)
+    
+);
+CREATE TABLE tablet_implant(
+    id SERIAL PRIMARY KEY,
+    tipo VARCHAR(50),
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+    implant VARCHAR (100)
+    
+);
+
 CREATE TABLE danos (
     id SERIAL PRIMARY KEY,
     tipo VARCHAR(50),
@@ -146,113 +764,55 @@ CREATE TABLE danos (
     referencia_pantalla VARCHAR(100),
     service_tag_pantalla VARCHAR(100),
     activo_pantalla VARCHAR(100),
-    acta BYTEA,                   -- PDF
-    hoja_vida BYTEA,              -- Excel
-    observaciones TEXT
+    observaciones VARCHAR (400),
+	sucursal VARCHAR (100),
+	implant VARCHAR (100)
 );
- 
- 
- 
--- Insertar un equipo de ESCRITORIO
-INSERT INTO disponibles (
-    tipo,
-    marca_cpu,
-    referencia_cpu,
-    service_tag_cpu,
-    activo_cpu,
-    marca_pantalla,
-    referencia_pantalla,
-    service_tag_pantalla,
-    activo_pantalla
-) VALUES (
-    'ESCRITORIO',
-    'DELL',
-    'OptiPlex 3080',
-    '6P4Q6J3',
-    '13332',
-    'DELL',
-    'PANTALLA DELL',
-    '5YSCCX2',
-    '13224'
-);
- 
--- Insertar un equipo PORTÁTIL
-INSERT INTO disponibles (
-    tipo,
-    marca_cpu,
-    referencia_cpu,
-    service_tag_cpu,
-    activo_cpu
-) VALUES (
-    'PORTATIL',
-    'DELL',
-    'Latitude 3440',
-    'GGPC524',
-    '15844'
-);
- 
--- Insertar una TABLET
-INSERT INTO disponibles (
-    tipo,
-    marca_cpu,
-    referencia_cpu,
-    service_tag_cpu,
-    activo_cpu
-) VALUES (
-    'TABLET',
-    'MICROSOFT',
-    'Surface Pro 8',
-    'BK000LT223101J',
-    '3296'
-);
- 
-SELECT * FROM disponibles
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '8TQ7BZ2', '201904220', 'DELL', 'PANTALLA DELL', 'H40BRX2', '201904197'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '975T9Z2', '201901578', 'DELL', 'PANTALLA DELL', '5HZ9RX2', '201901690'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '961X9Z2', '201901635', 'DELL', 'PANTALLA DELL', 'CYNBRX2', '13865'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '8WTBBZ2', '201912203', 'DELL', 'PANTALLA DELL', '39TCCX2', '201905519'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '93RDBZ2', '201912984', 'DELL', 'PANTALLA DELL', 'B44N4T2', '201910096'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '9CJY9Z2', '201901556', 'DELL', 'PANTALLA DELL', 'CCSCRX2', '201901685'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3000', 'FLM00R3', '13800', 'DELL', 'PANTALLA DELL', '69WRX2', '201903452'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', 'B57Z9Z2', '201903127', 'DELL', 'PANTALLA DELL', 'B4TCRX2', '201903119'),
-('ESCRITORIO', 'DELL', 'OptiPlex 3070', '97SX9Z2', '201903109', 'DELL', 'PANTALLA DELL', '2Y9GCX2', '201903142');
-INSERT INTO disponibles (
-    tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
-    marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla
-) VALUES
-('PORTATIL', 'DELL', 'Latitude 3400', '2M5XPT2', '201902899', NULL, NULL, NULL, NULL),
-('PORTATIL', 'DELL', 'Latitude 3400', '6Q8XPT2', '201902872', NULL, NULL, NULL, NULL),
-('PORTATIL', 'LENOVO', 'Type 82KA', 'PF34S4YH', '3241', NULL, NULL, NULL, NULL),
-('PORTATIL', 'ASUS', 'M1402IA', 'N6N0CX085877246', '3338', NULL, NULL, NULL, NULL),
-('PORTATIL', 'HP', 'ProBook 445G8', '5CD2098TG1', '3242', NULL, NULL, NULL, NULL);
 
-
-CREATE TABLE mantenimientos (
+CREATE TABLE renuncia (
     id SERIAL PRIMARY KEY,
-
-    -- Datos del equipo (CPU)
-    tipo VARCHAR(50),                  
+    tipo VARCHAR(50),
     marca_cpu VARCHAR(100),
     referencia_cpu VARCHAR(100),
     service_tag_cpu VARCHAR(100),
     activo_cpu VARCHAR(100),
-
-    -- Datos de pantalla
     marca_pantalla VARCHAR(100),
     referencia_pantalla VARCHAR(100),
     service_tag_pantalla VARCHAR(100),
     activo_pantalla VARCHAR(100),
-
-    -- Tipo de mantenimiento: FISICO / PREVENTIVO
-    mantenimiento VARCHAR(20) CHECK (mantenimiento IN ('FISICO', 'PREVENTIVO')),
-
-    -- Ruta del documento asociado (Excel / Word / PDF)
-    ruta_archivo TEXT,
-
-    -- Fechas
-    fecha DATE DEFAULT CURRENT_DATE,
-    creado_en TIMESTAMP DEFAULT NOW(),
-
-    -- Observaciones
-    descripcion TEXT
+    nombre_funcionario VARCHAR(150),
+    correo VARCHAR(150),
+    area VARCHAR(100),
+    jefe_inmediato VARCHAR(150),
+	sucursal VARCHAR (100),
+	implant VARCHAR (100)
+   
 );
+
+CREATE TABLE mantenimientos (
+
+	id SERIAL PRIMARY KEY,
+	tipo VARCHAR(50),                  
+    marca_cpu VARCHAR(100),
+    referencia_cpu VARCHAR(100),
+    service_tag_cpu VARCHAR(100),
+    activo_cpu VARCHAR(100),
+    marca_pantalla VARCHAR(100),
+    referencia_pantalla VARCHAR(100),
+    service_tag_pantalla VARCHAR(100),
+    activo_pantalla VARCHAR(100),
+    mantenimiento VARCHAR(200),
+    ruta_archivo VARCHAR (100),
+    fecha VARCHAR (100),
+    creado_en VARCHAR (100),
+    descripcion VARCHAR (200)
+
+);
+
+ 
+
+
+
+
+
+
