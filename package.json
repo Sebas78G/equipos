@@ -16,6 +16,7 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.8.2",
     "lucide-react": "^0.553.0",
+    "luckysheet": "^2.1.13",
     "pg": "^8.16.3",
     "react": "^18.3.1",
     "react-data-grid": "^7.0.0-beta.58",
@@ -26,6 +27,7 @@
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
     "web-vitals": "^2.1.4",
+    "x-data-spreadsheet": "^1.1.9",
     "xlsx": "^0.18.5"
   },
   "scripts": {

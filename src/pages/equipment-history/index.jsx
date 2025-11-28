@@ -1,27 +1,26 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import MainNavigation from 'components/ui/MainNavigation';
 import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import EquipmentDetailsCard from './components/EquipmentDetailsCard';
 import Icon from 'components/AppIcon';
 import Button from 'components/ui/Button';
 import { getEquipmentByServiceTag } from 'services/equipmentService';
-import ExcelViewer from './components/ExcelViewer'; // Import the new component
+import ExcelViewer from './components/ExcelViewer';
+import ActaViewer from './components/ActaViewer';
 
 const EquipmentHistory = () => {
   const [selectedEquipment, setSelectedEquipment] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isViewerOpen, setIsViewerOpen] = useState(false); // State for viewer visibility
+  const [isExcelViewerOpen, setIsExcelViewerOpen] = useState(false);
+  const [isActaViewerOpen, setIsActaViewerOpen] = useState(false);
   const location = useLocation();
-  const navigate = useNavigate();
 
   const serviceTag = new URLSearchParams(location.search).get('service_tag');
 
   const fetchEquipmentData = useCallback(() => {
-    const passedDetails = location.state?.equipmentDetails;
-
     if (!serviceTag) {
       setError('No se ha especificado un service tag de equipo en la URL.');
       setIsLoading(false);
@@ -29,25 +28,24 @@ const EquipmentHistory = () => {
     }
 
     setIsLoading(true);
-    setError(null);
-
-    if (passedDetails) {
-      setSelectedEquipment(passedDetails);
-      setIsLoading(false);
+    const detailsFromState = location.state?.equipmentDetails;
+    if (detailsFromState) {
+        setSelectedEquipment(detailsFromState);
+        setIsLoading(false);
     } else {
-      getEquipmentByServiceTag(serviceTag)
-        .then(details => {
-          if (details) {
-            setSelectedEquipment(details);
-          } else {
-            throw new Error('No se pudo encontrar el equipo con el service tag especificado.');
-          }
-        })
-        .catch(e => {
-          console.error("Error fetching equipment data:", e);
-          setError(e.message || 'Ocurrió un error al cargar los datos del equipo.');
-        })
-        .finally(() => setIsLoading(false));
+        getEquipmentByServiceTag(serviceTag)
+            .then(details => {
+                if (details) {
+                    setSelectedEquipment(details);
+                } else {
+                    throw new Error('No se pudo encontrar el equipo con el service tag especificado.');
+                }
+            })
+            .catch(e => {
+                console.error("Error fetching equipment data:", e);
+                setError(e.message || 'Ocurrió un error al cargar los datos del equipo.');
+            })
+            .finally(() => setIsLoading(false));
     }
   }, [serviceTag, location.state]);
 
@@ -55,16 +53,15 @@ const EquipmentHistory = () => {
     fetchEquipmentData();
   }, [fetchEquipmentData]);
 
-  const handleViewActa = () => {
-    if (selectedEquipment) {
-      navigate('/document-generation', { state: { equipment: selectedEquipment, documentType: 'acta' } });
+  const handleViewLatestActa = () => {
+    if (serviceTag) {
+      setIsActaViewerOpen(true);
     }
   };
 
-  // Updated handler to open the modal viewer
   const handleViewHojaDeVida = () => {
     if (serviceTag) {
-      setIsViewerOpen(true);
+      setIsExcelViewerOpen(true);
     }
   };
 
@@ -78,7 +75,7 @@ const EquipmentHistory = () => {
       );
     }
 
-    if (error) {
+    if (error && !selectedEquipment) {
       return (
         <div className="text-center py-12">
             <Icon name="AlertTriangle" size={24} className="text-error mx-auto mb-4" />
@@ -89,11 +86,11 @@ const EquipmentHistory = () => {
 
     if (selectedEquipment) {
       return (
-        <EquipmentDetailsCard 
-            equipment={selectedEquipment} 
-            onDamageReported={fetchEquipmentData}
-            onStatusChange={fetchEquipmentData} 
-        />
+          <EquipmentDetailsCard 
+              equipment={selectedEquipment} 
+              onDamageReported={fetchEquipmentData}
+              onStatusChange={fetchEquipmentData} 
+          />
       );
     }
     return null;
@@ -115,7 +112,7 @@ const EquipmentHistory = () => {
               </div>
               {selectedEquipment && (
                 <div className="flex items-center space-x-3">
-                  <Button variant="outline" size="sm" onClick={handleViewActa}>
+                  <Button variant="outline" size="sm" onClick={handleViewLatestActa}>
                     <Icon name="FileText" size={16} className="mr-2" />
                     Ver Acta
                   </Button>
@@ -131,11 +128,18 @@ const EquipmentHistory = () => {
         </div>
       </div>
       
-      {/* Render the viewer component as a modal */}
-      {isViewerOpen && (
+      {isExcelViewerOpen && (
         <ExcelViewer 
           serviceTag={serviceTag} 
-          onClose={() => setIsViewerOpen(false)} 
+          onClose={() => setIsExcelViewerOpen(false)} 
+        />
+      )}
+
+      {isActaViewerOpen && (
+        <ActaViewer 
+          serviceTag={serviceTag}
+          asesorNombre={selectedEquipment?.nombre_empleado || 'Información no disponible'}
+          onClose={() => setIsActaViewerOpen(false)}
         />
       )}
     </div>

@@ -1,21 +1,17 @@
-
 const express = require('express');
 const cors = require('cors');
 const pool = require('./db');
-const testRoutes = require('./test-route'); // Import the new routes
+const testRoutes = require('./test-route');
+const fs = require('fs');
+const path = require('path');
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use('/api', testRoutes); // Use the new routes
+app.use('/api', testRoutes);
 
-// ============================
-// ENDPOINTS PARA DISPONIBLES
-// ============================
-
-// GET all available equipment
 app.get('/api/disponibles', async (req, res) => {
   try {
     const allAvailable = await pool.query('SELECT * FROM disponibles');
@@ -26,11 +22,6 @@ app.get('/api/disponibles', async (req, res) => {
   }
 });
 
-// ============================
-// ENDPOINTS PARA ASIGNACIONES
-// ============================
-
-// GET all assignments from all tables
 app.get('/api/asignaciones', async (req, res) => {
   try {
     const pcs = await pool.query('SELECT * FROM asignaciones_pc');
@@ -50,19 +41,20 @@ app.get('/api/asignaciones', async (req, res) => {
   }
 });
 
-// GET all equipment from all tables
 app.get('/api/equipment', async (req, res) => {
   try {
     const pcs = await pool.query('SELECT * FROM asignaciones_pc');
     const portatiles = await pool.query('SELECT * FROM asignaciones_portatiles');
     const tablets = await pool.query('SELECT * FROM asignaciones_tablets');
     const disponibles = await pool.query('SELECT * FROM disponibles');
+    const mantenimientos = await pool.query('SELECT * FROM mantenimientos');
 
     const allEquipment = [
       ...pcs.rows,
       ...portatiles.rows,
       ...tablets.rows,
       ...disponibles.rows,
+      ...mantenimientos.rows,
     ];
 
     res.json(allEquipment);
@@ -72,7 +64,6 @@ app.get('/api/equipment', async (req, res) => {
   }
 });
 
-// GET assignments by type
 app.get('/api/asignaciones/:tipo', async (req, res) => {
     const { tipo } = req.params;
     let tableName;
@@ -95,7 +86,6 @@ app.get('/api/asignaciones/:tipo', async (req, res) => {
     }
 });
 
-// POST a new assignment
 app.post('/api/asignaciones', async (req, res) => {
     const {
         disponible_id,
@@ -137,23 +127,23 @@ app.post('/api/asignaciones', async (req, res) => {
                 INSERT INTO ${tableName} (
                     tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
                     marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla,
-                    acta, nombre_funcionario, correo, area, jefe_inmediato, hoja_vida
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15) RETURNING *`;
+                    acta, nombre_funcionario, correo, area, jefe_inmediato, hoja_vida, ruta_archivo
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *`;
             const values = [
                 equipo.tipo, equipo.marca_cpu, equipo.referencia_cpu, equipo.service_tag_cpu, equipo.activo_cpu,
                 equipo.marca_pantalla, equipo.referencia_pantalla, equipo.service_tag_pantalla, equipo.activo_pantalla,
-                acta, nombre_funcionario, correo, area, jefe_inmediato, equipo.hoja_vida
+                acta, nombre_funcionario, correo, area, jefe_inmediato, equipo.hoja_vida, equipo.ruta_archivo
             ];
             newAsignacionResult = await pool.query(query, values);
         } else if (tipoLowerCase === 'tablet') {
             const query = `
                 INSERT INTO asignaciones_tablets (
                     tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
-                    acta, nombre_funcionario, correo, area, jefe_inmediato, hoja_vida
-                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *`;
+                    acta, nombre_funcionario, correo, area, jefe_inmediato, hoja_vida, ruta_archivo
+                ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`;
             const values = [
                 equipo.tipo, equipo.marca_cpu, equipo.referencia_cpu, equipo.service_tag_cpu, equipo.activo_cpu,
-                acta, nombre_funcionario, correo, area, jefe_inmediato, equipo.hoja_vida
+                acta, nombre_funcionario, correo, area, jefe_inmediato, equipo.hoja_vida, equipo.ruta_archivo
             ];
             newAsignacionResult = await pool.query(query, values);
         } else {
@@ -171,7 +161,6 @@ app.post('/api/asignaciones', async (req, res) => {
     }
 });
 
-// GET equipment by service tag
 app.get('/api/equipment/by-tag/:serviceTag', async (req, res) => {
     const { serviceTag } = req.params;
 
@@ -180,7 +169,7 @@ app.get('/api/equipment/by-tag/:serviceTag', async (req, res) => {
     }
 
     try {
-        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles', 'danos'];
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles', 'danos', 'mantenimientos'];
         let equipment = null;
 
         for (const table of tables) {
@@ -203,7 +192,6 @@ app.get('/api/equipment/by-tag/:serviceTag', async (req, res) => {
     }
 });
 
-// GET history by service tag
 app.get('/api/history/by-tag/:serviceTag', async (req, res) => {
   const { serviceTag } = req.params;
 
@@ -242,9 +230,10 @@ app.get('/api/history/by-tag/:serviceTag', async (req, res) => {
       pool.query(`SELECT *, 'disponibles' as source_table FROM disponibles WHERE service_tag_cpu = $1`, [serviceTag]),
       pool.query(`SELECT *, 'renuncia' as source_table FROM renuncia WHERE service_tag_cpu = $1`, [serviceTag]),
       pool.query(`SELECT *, 'danos' as source_table FROM danos WHERE service_tag_cpu = $1`, [serviceTag]),
+      pool.query(`SELECT *, 'mantenimientos' as source_table FROM mantenimientos WHERE service_tag_cpu = $1`, [serviceTag]),
     ];
 
-    const [pcs, portatiles, tablets, disponibles, renuncias, danos] = await Promise.all(queries);
+    const [pcs, portatiles, tablets, disponibles, renuncias, danos, mantenimientos] = await Promise.all(queries);
 
     addEvents(pcs.rows, "assignment");
     addEvents(portatiles.rows, "assignment");
@@ -252,6 +241,7 @@ app.get('/api/history/by-tag/:serviceTag', async (req, res) => {
     addEvents(disponibles.rows, "available");
     addEvents(renuncias.rows, "unassignment");
     addEvents(danos.rows, "damage");
+    addEvents(mantenimientos.rows, "maintenance");
 
     results.sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -293,6 +283,7 @@ function getEventTitle(type, row) {
     case "unassignment": return "Renuncia del equipo";
     case "available": return "Ingreso a inventario";
     case "damage": return "Daño reportado";
+    case "maintenance": return "Mantenimiento del equipo";
     default: return "Evento del equipo";
   }
 }
@@ -303,13 +294,10 @@ function getEventDescription(type, row) {
     case "unassignment": return `El equipo fue devuelto por ${row.nombre_funcionario}`;
     case "available": return row.observaciones || "El equipo está disponible en inventario";
     case "damage": return row.observaciones || "Daño registrado";
+    case "maintenance": return row.observaciones || "Mantenimiento registrado";
     default: return "";
   }
 }
-
-// ============================
-// ENDPOINTS PARA DAÑOS
-// ============================
 
 app.get('/api/danos', async (req, res) => {
     try {
@@ -334,7 +322,7 @@ app.post('/api/damage/by-tag/:serviceTag', async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles'];
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles', 'mantenimientos'];
         let equipment = null;
         let sourceTable = null;
 
@@ -356,13 +344,13 @@ app.post('/api/damage/by-tag/:serviceTag', async (req, res) => {
             INSERT INTO danos (
                 tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
                 marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla,
-                acta, hoja_vida, observaciones
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`;
+                acta, hoja_vida, observaciones, ruta_archivo
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`;
         
         const values = [
             equipment.tipo, equipment.marca_cpu, equipment.referencia_cpu, equipment.service_tag_cpu, equipment.activo_cpu,
             equipment.marca_pantalla, equipment.referencia_pantalla, equipment.service_tag_pantalla, equipment.activo_pantalla,
-            new Date(), equipment.hoja_vida, observaciones
+            new Date(), equipment.hoja_vida, observaciones, equipment.ruta_archivo
         ];
 
         const danoResult = await client.query(insertQuery, values);
@@ -381,7 +369,6 @@ app.post('/api/damage/by-tag/:serviceTag', async (req, res) => {
     }
 });
 
-// POST to repair a piece of equipment and move it to disponibles
 app.post('/api/equipment/repair/:serviceTag', async (req, res) => {
     const { serviceTag } = req.params;
     const { repair_notes } = req.body;
@@ -409,8 +396,8 @@ app.post('/api/equipment/repair/:serviceTag', async (req, res) => {
             INSERT INTO disponibles (
                 tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
                 marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla,
-                hoja_vida, observaciones, acta
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *`;
+                hoja_vida, observaciones, acta, ruta_archivo
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13) RETURNING *`;
         
         const values = [
             equipment.tipo, 
@@ -424,7 +411,8 @@ app.post('/api/equipment/repair/:serviceTag', async (req, res) => {
             equipment.activo_pantalla,
             equipment.hoja_vida, 
             repair_notes, // The new repair notes
-            new Date() // Update the date to the repair date
+            new Date(), // Update the date to the repair date
+            equipment.ruta_archivo
         ];
 
         const repairedResult = await client.query(insertQuery, values);
@@ -443,11 +431,9 @@ app.post('/api/equipment/repair/:serviceTag', async (req, res) => {
     }
 });
 
-// Route to move an item from 'disponibles' to 'danos'
 app.post('/api/equipment/:id/mark-damaged', async (req, res) => {
   const { id } = req.params;
 
-  // Make sure the ID is a valid number
   if (isNaN(id)) {
     return res.status(400).json({ error: 'ID de equipo inválido.' });
   }
@@ -455,33 +441,27 @@ app.post('/api/equipment/:id/mark-damaged', async (req, res) => {
   const client = await pool.connect();
 
   try {
-    // Start a transaction
     await client.query('BEGIN');
 
-    // 1. Find the equipment in the 'disponibles' table
     const findQuery = 'SELECT * FROM disponibles WHERE id = $1';
     const findResult = await client.query(findQuery, [id]);
     const equipment = findResult.rows[0];
 
     if (!equipment) {
-      // If not found, rollback and send an error
       await client.query('ROLLBACK');
       return res.status(404).json({ error: 'Equipo no encontrado en la tabla de disponibles.' });
     }
 
-    // 2. Insert the equipment data into the 'danos' table
-    // IMPORTANT: Make sure the columns in your 'danos' table match these fields.
-    // Add or remove fields as necessary. I'm assuming they are the same.
     const insertQuery = `
       INSERT INTO danos (
         tipo, marca_cpu, referencia_cpu, service_tag_cpu, activo_cpu,
         marca_pantalla, referencia_pantalla, service_tag_pantalla, activo_pantalla,
         observaciones, acta, base, guaya, mouse, teclado, cargador, cable_red, cable_poder,
         adaptador_pantalla, adaptador_red, adaptador_multipuertos, antena_wireless,
-        base_adicional, cable_poder_adicional, guaya_adicional, pantalla_adicional
+        base_adicional, cable_poder_adicional, guaya_adicional, pantalla_adicional, ruta_archivo
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-        $17, $18, $19, $20, $21, $22, $23, $24, $25, $26
+        $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27
       )
     `;
     const values = [
@@ -491,45 +471,100 @@ app.post('/api/equipment/:id/mark-damaged', async (req, res) => {
       new Date(), // acta (sets current date)
       equipment.base, equipment.guaya, equipment.mouse, equipment.teclado, equipment.cargador, equipment.cable_red, equipment.cable_poder,
       equipment.adaptador_pantalla, equipment.adaptador_red, equipment.adaptador_multipuertos, equipment.antena_wireless,
-      equipment.base_adicional, equipment.cable_poder_adicional, equipment.guaya_adicional, equipment.pantalla_adicional
+      equipment.base_adicional, equipment.cable_poder_adicional, equipment.guaya_adicional, equipment.pantalla_adicional,
+      equipment.ruta_archivo
     ];
     await client.query(insertQuery, values);
 
-    // 3. Delete the equipment from the 'disponibles' table
     const deleteQuery = 'DELETE FROM disponibles WHERE id = $1';
     await client.query(deleteQuery, [id]);
 
-    // 4. Commit the transaction
     await client.query('COMMIT');
 
     res.status(200).json({ message: 'Equipo movido a la tabla de dañados exitosamente.' });
 
   } catch (error) {
-    // If any error occurs, rollback the transaction
     await client.query('ROLLBACK');
     console.error('Error al mover el equipo a dañados:', error);
     res.status(500).json({ error: 'Error interno del servidor al procesar la solicitud.' });
   } finally {
-    // Release the client back to the pool
     client.release();
   }
 });
 
-// =======================================================================
-// FINAL, CORRECT ROUTE FOR HOJA DE VIDA
-// =======================================================================
-app.get('/equipment/hoja-de-vida/:serviceTag', async (req, res) => {
+app.get('/api/equipment/acta/latest/:serviceTag', async (req, res) => {
     const { serviceTag } = req.params;
     if (!serviceTag) {
         return res.status(400).json({ msg: 'Service tag is required' });
     }
 
     try {
-        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles', 'danos'];
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles', 'danos', 'renuncia', 'mantenimientos'];
+        let filePath = null;
+
+        for (const table of tables) {
+            const result = await pool.query(`SELECT ruta_archivo FROM ${table} WHERE service_tag_cpu = $1`, [serviceTag]);
+            if (result.rows.length > 0 && result.rows[0].ruta_archivo) {
+                filePath = result.rows[0].ruta_archivo;
+                break;
+            }
+        }
+
+        if (!filePath) {
+            const templatePath = path.join(__dirname, 'src', 'assets', 'acta', 'FOR ACTA DE ENTREGA DE EQUIPO V_02.pdf');
+            if (fs.existsSync(templatePath)) {
+                res.setHeader('Content-Type', 'application/pdf');
+                return res.sendFile(templatePath);
+            }
+            return res.status(404).send('Acta template not found.');
+        }
+
+        if (!fs.existsSync(filePath) || !fs.statSync(filePath).isDirectory()) {
+            return res.status(404).send('Directory not found for this equipment.');
+        }
+
+        const files = fs.readdirSync(filePath);
+        const actaFiles = files
+            .filter(file => file.toUpperCase().includes('ACTA') && file.toLowerCase().endsWith('.pdf'))
+            .map(file => ({
+                name: file,
+                time: fs.statSync(path.join(filePath, file)).mtime.getTime(),
+            }))
+            .sort((a, b) => b.time - a.time); // Sort by modification time, descending
+
+        if (actaFiles.length === 0) {
+            const templatePath = path.join(__dirname, 'src', 'assets', 'acta', 'FOR ACTA DE ENTREGA DE EQUIPO V_02.pdf');
+            if (fs.existsSync(templatePath)) {
+                res.setHeader('Content-Type', 'application/pdf');
+                return res.sendFile(templatePath);
+            }
+            return res.status(404).send('No actas found in the directory and the default template is missing.');
+        }
+
+        const latestActaPath = path.join(filePath, actaFiles[0].name);
+        
+        const fileBuffer = fs.readFileSync(latestActaPath);
+        res.setHeader('Content-Type', 'application/pdf');
+        res.send(fileBuffer);
+
+    } catch (err) {
+        console.error('Error fetching latest acta:', err.message);
+        res.status(500).send('Server error');
+    }
+});
+
+
+app.get('/api/equipment/hoja-de-vida/:serviceTag', async (req, res) => {
+    const { serviceTag } = req.params;
+    if (!serviceTag) {
+        return res.status(400).json({ msg: 'Service tag is required' });
+    }
+
+    try {
+        const tables = ['asignaciones_pc', 'asignaciones_portatiles', 'asignaciones_tablets', 'disponibles', 'danos', 'mantenimientos'];
         let equipment = null;
 
         for (const table of tables) {
-            // Query for the hoja_vida column specifically
             const result = await pool.query(`SELECT hoja_vida FROM ${table} WHERE service_tag_cpu = $1`, [serviceTag]);
             if (result.rows.length > 0 && result.rows[0].hoja_vida) {
                 equipment = result.rows[0];
@@ -538,14 +573,11 @@ app.get('/equipment/hoja-de-vida/:serviceTag', async (req, res) => {
         }
 
         if (equipment && equipment.hoja_vida) {
-            // The 'hoja_vida' column is type bytea, which the pg driver converts to a Buffer
             const excelData = equipment.hoja_vida;
 
-            // Set headers to tell the browser it is an Excel file and to display it inline
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', 'inline'); // Important: tells browser to display, not download
+            res.setHeader('Content-Disposition', 'inline'); 
 
-            // Send the buffer directly
             res.send(excelData);
         } else {
             res.status(404).send('Hoja de Vida not found for this equipment.');
@@ -553,6 +585,43 @@ app.get('/equipment/hoja-de-vida/:serviceTag', async (req, res) => {
     } catch (err) {
         console.error('Error fetching Hoja de Vida:', err.message);
         res.status(500).send('Server error');
+    }
+});
+
+
+app.get("/api/equipment/Acta/:serviceTag", async (req, res) => {
+    const { serviceTag } = req.params;
+
+    const dir = "D:/Expreso Viajes y Turismo - CAFAM/TECNOLOGÍA - ACTAS";
+
+    try {
+        const files = fs.readdirSync(dir).filter(file => file.endsWith(".pdf"));
+
+        let matchedFile = null;
+
+        for (const file of files) {
+            const pdfPath = path.join(dir, file);
+
+            const fileBuffer = fs.readFileSync(pdfPath);
+            const pdfData = await pdfParse(fileBuffer);
+
+            if (pdfData.text.includes(serviceTag)) {
+                matchedFile = pdfPath;
+                break;
+            }
+        }
+
+        if (!matchedFile) {
+            return res.status(404).send("No se encontró un acta asociada con ese serviceTag.");
+        }
+
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", "inline");
+        res.sendFile(matchedFile);
+
+    } catch (error) {
+        console.error("Error buscando acta:", error);
+        res.status(500).send("Error en el servidor");
     }
 });
 

@@ -8,7 +8,7 @@ import EquipmentAssignment from './pages/equipment-assignment';
 import DocumentGeneration from './pages/document-generation';
 import EquipmentChangeManagement from './pages/Equipment Change Management';
 import EquipmentHistory from './pages/equipment-history';
-import EditEquipment from './pages/edit-equipment'; // Import the new component
+import EditEquipment from './pages/edit-equipment'; 
 
 const Routes = () => {
   return (
