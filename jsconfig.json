@@ -1,11 +1,24 @@
 {
   "compilerOptions": {
     "baseUrl": "src",
+    "paths": {
+      "*": [
+        "src/*"
+      ]
+    },
     "jsx": "react-jsx",
-    "typeRoots": [
-      "node_modules/@types"
-    ]
+    "checkJs": false,
+    "skipLibCheck": true,
+    "types": []
   },
+  "typeAcquisition": {
+    "enable": false
+  },
+  "exclude": [
+    "node_modules",
+    "build",
+    "dist"
+  ],
   "include": [
     "src"
   ]
