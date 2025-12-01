@@ -53,8 +53,10 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction, activeTab }) => {
         const serviceTag = item.serviceTag?.toLowerCase() || '';
         const employeeName = item.employeeName?.toLowerCase() || '';
         const type = item.type?.toLowerCase() || '';
+        const sucursal = item.sucursal?.toLowerCase() || '';
+        const implant = item.implant?.toLowerCase() || '';
 
-        return serviceTag.includes(term) || employeeName.includes(term) || type.includes(term);
+        return serviceTag.includes(term) || employeeName.includes(term) || type.includes(term) || sucursal.includes(term) || implant.includes(term);
       })
     : [];
 
@@ -157,6 +159,18 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction, activeTab }) => {
                   <Icon name="ArrowUpDown" size={12} />
                 </Button>
               </th>
+              <th className="px-6 py-3 text-center w-auto">
+                <Button variant="ghost" size="sm" onClick={() => handleSort('sucursal')} className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center">
+                  <span>Sucursal</span>
+                  <Icon name="ArrowUpDown" size={12} />
+                </Button>
+              </th>
+              <th className="px-6 py-3 text-center w-auto">
+                <Button variant="ghost" size="sm" onClick={() => handleSort('implant')} className="flex items-center space-x-1 font-medium text-muted-foreground hover:text-foreground w-full justify-center">
+                  <span>Implant</span>
+                  <Icon name="ArrowUpDown" size={12} />
+                </Button>
+              </th>
               
               {showStatusColumn && (
                   <th className="px-6 py-3 text-center w-auto">
@@ -205,6 +219,12 @@ const EquipmentTable = ({ equipmentData, onEquipmentAction, activeTab }) => {
                     <p className="font-medium text-foreground">{item?.employeeName || 'N/A'}</p>
                     <p className="text-xs text-muted-foreground">{item?.area}</p>
                   </div>
+                </td>
+                <td className="px-6 py-4 text-center" onClick={() => handleViewDetails(item)}>
+                  <p className="text-sm text-foreground whitespace-nowrap">{item?.sucursal || 'N/A'}</p>
+                </td>
+                <td className="px-6 py-4 text-center" onClick={() => handleViewDetails(item)}>
+                  <p className="text-sm text-foreground whitespace-nowrap">{item?.implant || 'N/A'}</p>
                 </td>
 
                 {showStatusColumn && (

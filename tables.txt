@@ -25,7 +25,8 @@ CREATE TABLE disponibles (
     guaya_adicional BOOLEAN,
     pantalla_adicional BOOLEAN,
     sucursal VARCHAR (100),
-	implant VARCHAR (100)
+	implant VARCHAR (100),
+    ruta VARCHAR(200)
 );
 
 CREATE TABLE pc_calle72(
@@ -44,7 +45,8 @@ CREATE TABLE pc_calle72(
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
     sucursal VARCHAR (100),
-	implant VARCHAR (100)
+	implant VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_calle72(
@@ -63,7 +65,8 @@ CREATE TABLE portatil_calle72(
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
     sucursal VARCHAR (100),
-	implant VARCHAR (100)
+	implant VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_calle72(
@@ -82,7 +85,8 @@ CREATE TABLE tablet_calle72(
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
     sucursal VARCHAR (100),
-	implant VARCHAR (100)
+	implant VARCHAR (100),
+    ruta VARCHAR(200)
 	   
 );
 
@@ -101,7 +105,8 @@ CREATE TABLE pc_barranquilla(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -120,7 +125,8 @@ CREATE TABLE portatil_barranquilla(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -139,7 +145,8 @@ CREATE TABLE tablet_barranquilla(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -158,7 +165,8 @@ CREATE TABLE pc_cali(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_cali(
@@ -176,7 +184,8 @@ CREATE TABLE portatil_cali(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -195,7 +204,8 @@ CREATE TABLE tablet_cali(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -214,7 +224,8 @@ CREATE TABLE pc_cartagena(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -233,7 +244,8 @@ CREATE TABLE portatil_cartagena(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -252,7 +264,8 @@ CREATE TABLE tablet_cartagena(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -271,7 +284,8 @@ CREATE TABLE pc_floresta(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_floresta(
@@ -289,7 +303,8 @@ CREATE TABLE portatil_floresta(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_floresta(
@@ -307,7 +322,8 @@ CREATE TABLE tablet_floresta(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -326,7 +342,8 @@ CREATE TABLE pc_kennedy(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_kennedy(
@@ -344,7 +361,8 @@ CREATE TABLE portatil_kennedy(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_kennedy(
@@ -362,7 +380,8 @@ CREATE TABLE tablet_kennedy(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -381,7 +400,8 @@ CREATE TABLE pc_medellin(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -400,7 +420,8 @@ CREATE TABLE portatil_medellin(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_medellin(
@@ -418,7 +439,8 @@ CREATE TABLE tablet_medellin(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -437,7 +459,8 @@ CREATE TABLE pc_aeropuerto(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_aeropuerto(
@@ -455,7 +478,8 @@ CREATE TABLE portatil_aeropuerto(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_aeropuerto(
@@ -473,7 +497,8 @@ CREATE TABLE tablet_aeropuerto(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -492,7 +517,8 @@ CREATE TABLE pc_american_express(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_american_express(
@@ -510,7 +536,8 @@ CREATE TABLE portatil_american_express(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_american_express(
@@ -528,7 +555,8 @@ CREATE TABLE tablet_american_express(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -547,7 +575,8 @@ CREATE TABLE pc_boston_consulting(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -566,7 +595,8 @@ CREATE TABLE portatil_boston_consulting(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_boston_consulting(
@@ -584,7 +614,8 @@ CREATE TABLE tablet_boston_consulting(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -603,7 +634,8 @@ CREATE TABLE pc_popayan(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_popayan(
@@ -621,7 +653,8 @@ CREATE TABLE portatil_popayan(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_popayan(
@@ -639,7 +672,8 @@ CREATE TABLE tablet_popayan(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE pc_emergencia(
@@ -657,7 +691,8 @@ CREATE TABLE pc_emergencia(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_emergencia(
@@ -675,7 +710,8 @@ CREATE TABLE portatil_emergencia(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -694,7 +730,8 @@ CREATE TABLE tablet_emergencia(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    sucursal VARCHAR (100)
+    sucursal VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -713,7 +750,8 @@ CREATE TABLE pc_implant(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    implant VARCHAR (100)
+    implant VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE portatil_implant(
@@ -731,7 +769,8 @@ CREATE TABLE portatil_implant(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    implant VARCHAR (100)
+    implant VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 CREATE TABLE tablet_implant(
@@ -749,7 +788,8 @@ CREATE TABLE tablet_implant(
     correo VARCHAR(150),
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
-    implant VARCHAR (100)
+    implant VARCHAR (100),
+    ruta VARCHAR(200)
     
 );
 
@@ -766,7 +806,8 @@ CREATE TABLE danos (
     activo_pantalla VARCHAR(100),
     observaciones VARCHAR (400),
 	sucursal VARCHAR (100),
-	implant VARCHAR (100)
+	implant VARCHAR (100),
+    ruta VARCHAR(200)
 );
 
 CREATE TABLE renuncia (
@@ -785,7 +826,8 @@ CREATE TABLE renuncia (
     area VARCHAR(100),
     jefe_inmediato VARCHAR(150),
 	sucursal VARCHAR (100),
-	implant VARCHAR (100)
+	implant VARCHAR (100),
+    ruta VARCHAR(200)
    
 );
 
@@ -805,7 +847,8 @@ CREATE TABLE mantenimientos (
     ruta_archivo VARCHAR (100),
     fecha VARCHAR (100),
     creado_en VARCHAR (100),
-    descripcion VARCHAR (200)
+    descripcion VARCHAR (200),
+    ruta VARCHAR(200)
 
 );
 
@@ -816,3 +859,7 @@ CREATE TABLE mantenimientos (
 
 
 
+npm install tailwindcss-animate
+ 
+npm install lucide-react @radix-ui/react-slot class-variance-authority clsx tailwind-merge
+ 

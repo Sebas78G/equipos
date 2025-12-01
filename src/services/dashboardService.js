@@ -72,12 +72,14 @@ const transformDataForDashboard = (disponibles, asignaciones, danos) => {
     })),
   ];
 
+  const assignedEquipment = allEquipment.filter(e => e.status === 'Asignado');
+
   const counts = {
     total: allEquipment.length,
-    pc: allEquipment.filter(e => e.type && (e.type.toLowerCase() === 'pc' || e.type.toLowerCase() === 'escritorio')).length,
-    portatil: allEquipment.filter(e => e.type && e.type.toLowerCase() === 'portatil').length,
-    tablet: allEquipment.filter(e => e.type && e.type.toLowerCase() === 'tablet').length,
-    asignados: allEquipment.filter(e => e.status === 'Asignado').length,
+    pc: assignedEquipment.filter(e => e.type && (e.type.toLowerCase() === 'pc' || e.type.toLowerCase() === 'escritorio')).length,
+    portatil: assignedEquipment.filter(e => e.type && e.type.toLowerCase() === 'portatil').length,
+    tablet: assignedEquipment.filter(e => e.type && e.type.toLowerCase() === 'tablet').length,
+    asignados: assignedEquipment.length,
     disponible: allEquipment.filter(e => e.status === 'Disponible').length,
     danados: allEquipment.filter(e => e.status === 'Dañado').length,
     disponiblePc: allEquipment.filter(e => e.type && (e.type.toLowerCase() === 'pc' || e.type.toLowerCase() === 'escritorio') && e.status === 'Disponible').length,

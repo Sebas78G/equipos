@@ -58,6 +58,16 @@ const EquipmentCard = ({ equipment, onReportDamage, onProcessResignation, active
           <p className="text-sm font-medium text-foreground mb-1">Área</p>
           <p className="text-sm text-muted-foreground">{equipment?.assignedEmployee?.area}</p>
         </div>
+
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">Sucursal</p>
+          <p className="text-sm text-muted-foreground">{equipment?.sucursal || 'N/A'}</p>
+        </div>
+
+        <div>
+          <p className="text-sm font-medium text-foreground mb-1">Implant</p>
+          <p className="text-sm text-muted-foreground">{equipment?.implant || 'N/A'}</p>
+        </div>
         
         <div>
           <p className="text-sm font-medium text-foreground mb-1">Fecha de Asignación</p>

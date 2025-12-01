@@ -4,7 +4,6 @@ import DashboardTabs from 'components/ui/DashboardTabs';
 import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import MetricsCard from './components/MetricsCard';
 import EquipmentTable from './components/EquipmentTable';
-import StatusOverview from './components/StatusOverview';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { getDashboardData, updateMaintenanceDate } from 'services/dashboardService';
 import Spinner from '../../components/ui/Spinner';
@@ -176,12 +175,6 @@ const MainDashboard = () => {
     { title: 'Tablet', count: currentCounts.tablet, icon: 'danger', description: `${currentCounts.disponibleTablet} disponibles` },
   ];
 
-  const statusData = [
-    { status: 'PCs Disponibles', count: currentCounts.disponiblePc, type: 'Disponible', icon: 'Monitor' },
-    { status: 'Portátiles Disponibles', count: currentCounts.disponiblePortatil, type: 'Disponible', icon: 'Laptop' },
-    { status: 'Tablets Disponibles', count: currentCounts.disponibleTablet, type: 'Disponible', icon: 'Tablet' },
-  ];
-
   if (loading) {
     return <div className="flex justify-center items-center h-screen"><Spinner /></div>;
   }
@@ -241,18 +234,13 @@ const MainDashboard = () => {
           )}
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className={activeTab === 'asignados' ? "lg:col-span-3" : "lg:col-span-2"}>
+            <div className={"lg:col-span-3"}>
               <EquipmentTable
                 equipmentData={getFilteredEquipmentData()}
                 onEquipmentAction={handleEquipmentAction}
                 activeTab={activeTab}
               />
             </div>
-            {activeTab !== 'asignados' && (
-              <div className="space-y-6">
-                <StatusOverview statusData={statusData} />
-              </div>
-            )}
           </div>
         </div>
       </div>

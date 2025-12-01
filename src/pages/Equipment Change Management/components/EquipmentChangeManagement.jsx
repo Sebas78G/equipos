@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import MainNavigation from 'components/ui/MainNavigation';
 import WorkflowBreadcrumbs from 'components/ui/WorkflowBreadcrumbs';
 import ChangeManagementTabs from './ChangeManagementTabs';
@@ -7,6 +7,7 @@ import EquipmentList from './EquipmentList';
 import DamageReportModal from './DamageReportModal';
 import ResignationProcessModal from './ResignationProcessModal';
 import Icon from 'components/AppIcon';
+import { getDashboardData } from '../../../services/dashboardService';
 
 const EquipmentChangeManagement = () => {
   const [activeTab, setActiveTab] = useState('damage');
@@ -15,10 +16,24 @@ const EquipmentChangeManagement = () => {
   const [isDamageModalOpen, setIsDamageModalOpen] = useState(false);
   const [isResignationModalOpen, setIsResignationModalOpen] = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [assignedEquipments, setAssignedEquipments] = useState([]);
+  const [dashboardCounts, setDashboardCounts] = useState({});
 
-  // Mock data for assigned equipment
-  const assignedEquipments = [];
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const { recentActivity, dashboardCounts } = await getDashboardData();
+        const assigned = recentActivity.filter(eq => eq.status === 'Asignado');
+        setAssignedEquipments(assigned);
+        setDashboardCounts(dashboardCounts);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const handleTabChange = (tabId) => {
     setActiveTab(tabId);
@@ -41,13 +56,11 @@ const EquipmentChangeManagement = () => {
 
   const handleDamageSubmit = (damageData) => {
     console.log('Damage report submitted:', damageData);
-    // Here you would typically send the data to your backend
     alert(`Reporte de daño enviado para el equipo ${damageData?.serviceTag}`);
   };
 
   const handleResignationSubmit = (resignationData) => {
     console.log('Resignation processed:', resignationData);
-    // Here you would typically send the data to your backend
     alert(`Renuncia procesada para el equipo ${resignationData?.serviceTag}`);
   };
 
@@ -82,7 +95,7 @@ const EquipmentChangeManagement = () => {
                   <Icon name="AlertTriangle" size={16} className="text-error" />
                   <span className="text-sm font-medium text-foreground">Reportes de Daños</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">0</p>
+                <p className="text-2xl font-bold text-foreground">{dashboardCounts.danados || 0}</p>
                 <p className="text-xs text-muted-foreground">Equipos con problemas</p>
               </div>
               
@@ -100,7 +113,7 @@ const EquipmentChangeManagement = () => {
                   <Icon name="Package" size={16} className="text-accent" />
                   <span className="text-sm font-medium text-foreground">Total Asignados</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{assignedEquipments?.length}</p>
+                <p className="text-2xl font-bold text-foreground">{dashboardCounts.asignados || 0}</p>
                 <p className="text-xs text-muted-foreground">Equipos en uso</p>
               </div>
             </div>

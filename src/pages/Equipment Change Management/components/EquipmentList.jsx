@@ -14,9 +14,14 @@ const EquipmentList = ({
     if (!searchTerm) return true;
     
     const searchLower = searchTerm?.toLowerCase();
-    return (equipment?.serviceTag?.toLowerCase()?.includes(searchLower) ||
-    equipment?.assignedEmployee?.name?.toLowerCase()?.includes(searchLower) ||
-    equipment?.brand?.toLowerCase()?.includes(searchLower) || equipment?.model?.toLowerCase()?.includes(searchLower));
+    return (
+      equipment?.serviceTag?.toLowerCase()?.includes(searchLower) ||
+      equipment?.assignedEmployee?.name?.toLowerCase()?.includes(searchLower) ||
+      equipment?.brand?.toLowerCase()?.includes(searchLower) ||
+      equipment?.model?.toLowerCase()?.includes(searchLower) ||
+      equipment?.sucursal?.toLowerCase()?.includes(searchLower) ||
+      equipment?.implant?.toLowerCase()?.includes(searchLower)
+    );
   });
 
   if (filteredEquipments?.length === 0) {
